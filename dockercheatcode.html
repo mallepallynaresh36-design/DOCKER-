@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docker Cheat Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e17;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #e8edf5;
+    --muted: #8896aa;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --green: #10b981;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --pink: #ec4899;
+    --code-bg: #0d1117;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;line-height:1.6;}
+
+  /* Hero */
+  .hero{
+    padding:60px 40px 48px;
+    border-bottom:1px solid var(--border);
+    position:relative;
+    overflow:hidden;
+  }
+  .hero::before{
+    content:'';position:absolute;top:-80px;right:-80px;
+    width:400px;height:400px;
+    background:radial-gradient(circle, rgba(0,212,255,0.08) 0%, transparent 70%);
+    pointer-events:none;
+  }
+  .hero::after{
+    content:'';position:absolute;bottom:-60px;left:20%;
+    width:300px;height:300px;
+    background:radial-gradient(circle, rgba(124,58,237,0.07) 0%, transparent 70%);
+    pointer-events:none;
+  }
+  .badge{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:11px;letter-spacing:2px;text-transform:uppercase;
+    color:var(--accent);border:1px solid rgba(0,212,255,0.3);
+    padding:4px 12px;border-radius:20px;margin-bottom:20px;
+  }
+  .whale{font-size:18px;}
+  h1{font-size:clamp(32px,5vw,52px);font-weight:800;line-height:1.1;letter-spacing:-1px;margin-bottom:12px;}
+  h1 span{color:var(--accent);}
+  .subtitle{font-size:15px;color:var(--muted);max-width:560px;}
+  .meta-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;}
+  .mtag{font-size:11px;padding:3px 10px;border-radius:4px;background:var(--surface2);color:var(--muted);border:1px solid var(--border2);}
+
+  /* Layout */
+  .container{max-width:1200px;margin:0 auto;padding:40px 40px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+  @media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr;}}
+
+  /* Section headers */
+  .section{margin-bottom:40px;}
+  .section-title{
+    font-size:11px;letter-spacing:3px;text-transform:uppercase;
+    color:var(--accent);margin-bottom:16px;display:flex;align-items:center;gap:10px;
+  }
+  .section-title::after{content:'';flex:1;height:1px;background:var(--border2);}
+
+  /* Cards */
+  .card{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:12px;padding:20px;
+  }
+  .card-title{
+    font-size:13px;font-weight:700;letter-spacing:0.5px;
+    margin-bottom:14px;display:flex;align-items:center;gap:8px;
+  }
+  .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .dot-blue{background:var(--accent);}
+  .dot-purple{background:var(--accent2);}
+  .dot-green{background:var(--green);}
+  .dot-amber{background:var(--amber);}
+  .dot-red{background:var(--red);}
+  .dot-pink{background:var(--pink);}
+
+  /* Command rows */
+  .cmd-row{
+    display:flex;align-items:baseline;gap:10px;
+    padding:6px 0;border-bottom:1px solid var(--border);
+    font-family:'JetBrains Mono',monospace;
+  }
+  .cmd-row:last-child{border-bottom:none;}
+  .cmd{
+    font-size:12px;color:var(--accent);
+    white-space:nowrap;flex-shrink:0;min-width:0;
+    word-break:break-all;
+  }
+  .desc{font-size:12px;color:var(--muted);font-family:'Syne',sans-serif;flex:1;}
+
+  /* Code blocks */
+  .code-block{
+    background:var(--code-bg);border:1px solid var(--border2);
+    border-radius:8px;padding:16px;margin-top:12px;
+    font-family:'JetBrains Mono',monospace;font-size:12px;
+    line-height:1.8;overflow-x:auto;
+  }
+  .cmt{color:#4a5568;}
+  .kw{color:var(--accent);}
+  .str{color:var(--green);}
+  .val{color:var(--amber);}
+  .flag{color:var(--pink);}
+
+  /* Flow diagram */
+  .flow{
+    display:flex;align-items:center;gap:0;
+    flex-wrap:wrap;margin:12px 0;
+  }
+  .flow-step{
+    background:var(--surface2);border:1px solid var(--border2);
+    border-radius:8px;padding:8px 14px;
+    font-size:12px;font-family:'JetBrains Mono',monospace;
+    color:var(--text);white-space:nowrap;
+  }
+  .flow-arrow{color:var(--accent);padding:0 6px;font-size:14px;}
+
+  /* Table */
+  table{width:100%;border-collapse:collapse;font-size:12px;}
+  th{text-align:left;padding:8px 10px;color:var(--muted);
+    border-bottom:1px solid var(--border2);font-family:'Syne',sans-serif;
+    font-size:11px;letter-spacing:0.5px;text-transform:uppercase;}
+  td{padding:8px 10px;border-bottom:1px solid var(--border);
+    font-family:'JetBrains Mono',monospace;color:var(--text);}
+  tr:last-child td{border-bottom:none;}
+  td.note{font-family:'Syne',sans-serif;color:var(--muted);}
+  tr:hover td{background:var(--surface2);}
+
+  /* Highlight boxes */
+  .tip{
+    background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.2);
+    border-radius:8px;padding:12px 14px;font-size:12px;color:var(--muted);
+    margin-top:12px;
+  }
+  .tip strong{color:var(--accent);}
+  .warn{
+    background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);
+    border-radius:8px;padding:12px 14px;font-size:12px;color:var(--muted);
+    margin-top:12px;
+  }
+  .warn strong{color:var(--amber);}
+
+  /* Full-width card */
+  .card-full{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:12px;padding:20px;margin-bottom:16px;
+  }
+
+  /* Tag badges */
+  .badge-green{background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.2);font-size:10px;padding:2px 7px;border-radius:4px;}
+  .badge-blue{background:rgba(0,212,255,0.1);color:var(--accent);border:1px solid rgba(0,212,255,0.2);font-size:10px;padding:2px 7px;border-radius:4px;}
+  .badge-amber{background:rgba(245,158,11,0.1);color:var(--amber);border:1px solid rgba(245,158,11,0.2);font-size:10px;padding:2px 7px;border-radius:4px;}
+  .badge-red{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2);font-size:10px;padding:2px 7px;border-radius:4px;}
+
+  /* Divider */
+  hr{border:none;border-top:1px solid var(--border);margin:40px 0;}
+
+  /* Footer */
+  .footer{text-align:center;padding:32px;border-top:1px solid var(--border);color:var(--muted);font-size:12px;}
+
+  @media print {
+    body{background:#fff;color:#000;}
+    .card,.card-full{border-color:#ccc;background:#f9f9f9;}
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="badge"><span class="whale">🐳</span> DevOps Interview Prep</div>
+  <h1>Docker <span>Cheat Sheet</span></h1>
+  <p class="subtitle">Every command, concept, and pattern you need to crack the DevOps interview. Built for 2–3 year experience level.</p>
+  <div class="meta-tags">
+    <span class="mtag">Images & Containers</span>
+    <span class="mtag">Dockerfile</span>
+    <span class="mtag">Networking</span>
+    <span class="mtag">Volumes</span>
+    <span class="mtag">Docker Compose</span>
+    <span class="mtag">Multi-stage Builds</span>
+    <span class="mtag">Debugging</span>
+    <span class="mtag">Best Practices</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- SECTION 1: LIFECYCLE -->
+  <div class="section">
+    <div class="section-title">01 — Docker lifecycle</div>
+    <div class="card-full">
+      <div class="card-title"><span class="dot dot-blue"></span>Container lifecycle flow</div>
+      <div class="flow">
+        <span class="flow-step">Dockerfile</span><span class="flow-arrow">→</span>
+        <span class="flow-step">docker build</span><span class="flow-arrow">→</span>
+        <span class="flow-step">Image</span><span class="flow-arrow">→</span>
+        <span class="flow-step">docker run</span><span class="flow-arrow">→</span>
+        <span class="flow-step">Container (running)</span><span class="flow-arrow">→</span>
+        <span class="flow-step">docker stop</span><span class="flow-arrow">→</span>
+        <span class="flow-step">Container (stopped)</span><span class="flow-arrow">→</span>
+        <span class="flow-step">docker rm</span><span class="flow-arrow">→</span>
+        <span class="flow-step">Gone</span>
+      </div>
+      <div class="tip"><strong>Interview tip:</strong> Know that stopped containers still exist on disk. Only <code>docker rm</code> removes them. Image stays unless you do <code>docker rmi</code>.</div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: IMAGES -->
+  <div class="section">
+    <div class="section-title">02 — Image commands</div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title"><span class="dot dot-blue"></span>Pull / build / tag / push</div>
+        <div class="cmd-row"><span class="cmd">docker pull nginx:latest</span><span class="desc">Download image from registry</span></div>
+        <div class="cmd-row"><span class="cmd">docker build -t myapp:1.0 .</span><span class="desc">Build from Dockerfile in current dir</span></div>
+        <div class="cmd-row"><span class="cmd">docker build -t myapp:1.0 -f Dockerfile.prod .</span><span class="desc">Build with specific Dockerfile</span></div>
+        <div class="cmd-row"><span class="cmd">docker tag myapp:1.0 registry/myapp:1.0</span><span class="desc">Tag for a registry</span></div>
+        <div class="cmd-row"><span class="cmd">docker push registry/myapp:1.0</span><span class="desc">Push to registry</span></div>
+        <div class="cmd-row"><span class="cmd">docker save myapp:1.0 > myapp.tar</span><span class="desc">Export image to tar file</span></div>
+        <div class="cmd-row"><span class="cmd">docker load < myapp.tar</span><span class="desc">Import image from tar</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot dot-purple"></span>Inspect / manage images</div>
+        <div class="cmd-row"><span class="cmd">docker images</span><span class="desc">List all local images</span></div>
+        <div class="cmd-row"><span class="cmd">docker images -a</span><span class="desc">Include intermediate layers</span></div>
+        <div class="cmd-row"><span class="cmd">docker inspect nginx:latest</span><span class="desc">Full JSON metadata</span></div>
+        <div class="cmd-row"><span class="cmd">docker history myapp:1.0</span><span class="desc">Show all layers & sizes</span></div>
+        <div class="cmd-row"><span class="cmd">docker rmi myapp:1.0</span><span class="desc">Delete image</span></div>
+        <div class="cmd-row"><span class="cmd">docker image prune -a</span><span class="desc">Delete all unused images</span></div>
+        <div class="cmd-row"><span class="cmd">docker image ls --filter dangling=true</span><span class="desc">Show untagged (dangling) images</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: CONTAINERS -->
+  <div class="section">
+    <div class="section-title">03 — Container commands</div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title"><span class="dot dot-green"></span>Run containers</div>
+        <div class="cmd-row"><span class="cmd">docker run nginx</span><span class="desc">Run (attached, foreground)</span></div>
+        <div class="cmd-row"><span class="cmd">docker run -d nginx</span><span class="desc">Run detached (background)</span></div>
+        <div class="cmd-row"><span class="cmd">docker run -d -p 8080:80 nginx</span><span class="desc">Map host:container port</span></div>
+        <div class="cmd-row"><span class="cmd">docker run --name myapp nginx</span><span class="desc">Give container a name</span></div>
+        <div class="cmd-row"><span class="cmd">docker run -e ENV_VAR=value nginx</span><span class="desc">Pass environment variable</span></div>
+        <div class="cmd-row"><span class="cmd">docker run -v /host/path:/container/path nginx</span><span class="desc">Bind mount a volume</span></div>
+        <div class="cmd-row"><span class="cmd">docker run -v myvolume:/data nginx</span><span class="desc">Named volume mount</span></div>
+        <div class="cmd-row"><span class="cmd">docker run --rm nginx</span><span class="desc">Auto-remove when stopped</span></div>
+        <div class="cmd-row"><span class="cmd">docker run -it ubuntu bash</span><span class="desc">Interactive terminal</span></div>
+        <div class="cmd-row"><span class="cmd">docker run --network mynet nginx</span><span class="desc">Connect to custom network</span></div>
+        <div class="cmd-row"><span class="cmd">docker run --memory=512m --cpus=1 nginx</span><span class="desc">Limit resources</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot dot-amber"></span>Manage containers</div>
+        <div class="cmd-row"><span class="cmd">docker ps</span><span class="desc">List running containers</span></div>
+        <div class="cmd-row"><span class="cmd">docker ps -a</span><span class="desc">List all (including stopped)</span></div>
+        <div class="cmd-row"><span class="cmd">docker stop myapp</span><span class="desc">Graceful stop (SIGTERM)</span></div>
+        <div class="cmd-row"><span class="cmd">docker kill myapp</span><span class="desc">Force stop (SIGKILL)</span></div>
+        <div class="cmd-row"><span class="cmd">docker start myapp</span><span class="desc">Start a stopped container</span></div>
+        <div class="cmd-row"><span class="cmd">docker restart myapp</span><span class="desc">Stop then start</span></div>
+        <div class="cmd-row"><span class="cmd">docker rm myapp</span><span class="desc">Remove stopped container</span></div>
+        <div class="cmd-row"><span class="cmd">docker rm -f myapp</span><span class="desc">Force remove running container</span></div>
+        <div class="cmd-row"><span class="cmd">docker rename old new</span><span class="desc">Rename container</span></div>
+        <div class="cmd-row"><span class="cmd">docker update --memory=1g myapp</span><span class="desc">Update resource limits live</span></div>
+        <div class="cmd-row"><span class="cmd">docker container prune</span><span class="desc">Remove all stopped containers</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: DEBUGGING -->
+  <div class="section">
+    <div class="section-title">04 — Debugging & inspection</div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title"><span class="dot dot-red"></span>Logs & exec</div>
+        <div class="cmd-row"><span class="cmd">docker logs myapp</span><span class="desc">View stdout/stderr logs</span></div>
+        <div class="cmd-row"><span class="cmd">docker logs -f myapp</span><span class="desc">Follow logs in real time</span></div>
+        <div class="cmd-row"><span class="cmd">docker logs --tail 100 myapp</span><span class="desc">Last 100 lines only</span></div>
+        <div class="cmd-row"><span class="cmd">docker logs --since 30m myapp</span><span class="desc">Logs from last 30 minutes</span></div>
+        <div class="cmd-row"><span class="cmd">docker exec -it myapp bash</span><span class="desc">Shell into running container</span></div>
+        <div class="cmd-row"><span class="cmd">docker exec myapp ls /app</span><span class="desc">Run single command inside</span></div>
+        <div class="cmd-row"><span class="cmd">docker exec -u root myapp bash</span><span class="desc">Exec as root user</span></div>
+        <div class="cmd-row"><span class="cmd">docker attach myapp</span><span class="desc">Attach to container STDIN</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot dot-pink"></span>Stats & inspect</div>
+        <div class="cmd-row"><span class="cmd">docker stats</span><span class="desc">Live CPU/memory usage (all)</span></div>
+        <div class="cmd-row"><span class="cmd">docker stats myapp</span><span class="desc">Live stats for one container</span></div>
+        <div class="cmd-row"><span class="cmd">docker top myapp</span><span class="desc">Running processes inside container</span></div>
+        <div class="cmd-row"><span class="cmd">docker inspect myapp</span><span class="desc">Full JSON config & state</span></div>
+        <div class="cmd-row"><span class="cmd">docker inspect -f '{{.NetworkSettings.IPAddress}}' myapp</span><span class="desc">Get container IP</span></div>
+        <div class="cmd-row"><span class="cmd">docker diff myapp</span><span class="desc">Changed files vs image</span></div>
+        <div class="cmd-row"><span class="cmd">docker port myapp</span><span class="desc">Show port mappings</span></div>
+        <div class="cmd-row"><span class="cmd">docker events</span><span class="desc">Stream Docker daemon events</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5: DOCKERFILE -->
+  <div class="section">
+    <div class="section-title">05 — Dockerfile reference</div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title"><span class="dot dot-blue"></span>All instructions explained</div>
+        <table>
+          <tr><th>Instruction</th><th>Purpose</th></tr>
+          <tr><td>FROM</td><td class="note">Base image (first instruction always)</td></tr>
+          <tr><td>RUN</td><td class="note">Execute command during build</td></tr>
+          <tr><td>COPY</td><td class="note">Copy files from host to image (preferred)</td></tr>
+          <tr><td>ADD</td><td class="note">Like COPY + extracts tars + fetches URLs</td></tr>
+          <tr><td>CMD</td><td class="note">Default command (overridable at runtime)</td></tr>
+          <tr><td>ENTRYPOINT</td><td class="note">Fixed executable (CMD becomes its args)</td></tr>
+          <tr><td>ENV</td><td class="note">Set environment variable in image</td></tr>
+          <tr><td>ARG</td><td class="note">Build-time variable (not in final image)</td></tr>
+          <tr><td>EXPOSE</td><td class="note">Document which port the app uses</td></tr>
+          <tr><td>WORKDIR</td><td class="note">Set working directory for RUN/COPY/CMD</td></tr>
+          <tr><td>USER</td><td class="note">Set user for subsequent instructions</td></tr>
+          <tr><td>VOLUME</td><td class="note">Declare a mount point</td></tr>
+          <tr><td>LABEL</td><td class="note">Add metadata key-value pairs</td></tr>
+          <tr><td>HEALTHCHECK</td><td class="note">Define container health test</td></tr>
+          <tr><td>ONBUILD</td><td class="note">Trigger when used as base image</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot dot-green"></span>Production-grade Dockerfile example</div>
+        <div class="code-block">
+<span class="cmt"># Stage 1: Build</span>
+<span class="kw">FROM</span> <span class="val">node:18-alpine</span> <span class="kw">AS</span> <span class="str">builder</span>
+<span class="kw">WORKDIR</span> <span class="str">/app</span>
+<span class="kw">COPY</span> package*.json ./
+<span class="kw">RUN</span> npm ci --only=production
+
+<span class="cmt"># Stage 2: Runtime</span>
+<span class="kw">FROM</span> <span class="val">node:18-alpine</span>
+<span class="kw">WORKDIR</span> <span class="str">/app</span>
+<span class="cmt"># Non-root user for security</span>
+<span class="kw">RUN</span> addgroup -S appgroup && \
+    adduser -S appuser -G appgroup
+<span class="kw">COPY</span> --from=builder /app/node_modules ./node_modules
+<span class="kw">COPY</span> . .
+<span class="kw">USER</span> appuser
+<span class="kw">EXPOSE</span> <span class="val">3000</span>
+<span class="kw">HEALTHCHECK</span> --interval=30s --timeout=3s \
+  CMD wget -qO- http://localhost:3000/health
+<span class="kw">CMD</span> [<span class="str">"node"</span>, <span class="str">"server.js"</span>]
+        </div>
+      </div>
+    </div>
+    <div class="card-full" style="margin-top:16px;">
+      <div class="card-title"><span class="dot dot-amber"></span>CMD vs ENTRYPOINT — the most asked question</div>
+      <table>
+        <tr><th>Scenario</th><th>Dockerfile</th><th>docker run command</th><th>What runs</th></tr>
+        <tr><td class="note">CMD only</td><td>CMD ["node","app.js"]</td><td>docker run myapp</td><td class="note">node app.js</td></tr>
+        <tr><td class="note">CMD overridden</td><td>CMD ["node","app.js"]</td><td>docker run myapp python script.py</td><td class="note">python script.py</td></tr>
+        <tr><td class="note">ENTRYPOINT only</td><td>ENTRYPOINT ["node"]</td><td>docker run myapp</td><td class="note">node</td></tr>
+        <tr><td class="note">Both together</td><td>ENTRYPOINT ["node"] CMD ["app.js"]</td><td>docker run myapp</td><td class="note">node app.js</td></tr>
+        <tr><td class="note">Override CMD with both</td><td>ENTRYPOINT ["node"] CMD ["app.js"]</td><td>docker run myapp server.js</td><td class="note">node server.js</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- SECTION 6: NETWORKING -->
+  <div class="section">
+    <div class="section-title">06 — Networking</div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title"><span class="dot dot-purple"></span>Network commands</div>
+        <div class="cmd-row"><span class="cmd">docker network ls</span><span class="desc">List all networks</span></div>
+        <div class="cmd-row"><span class="cmd">docker network create mynet</span><span class="desc">Create a bridge network</span></div>
+        <div class="cmd-row"><span class="cmd">docker network inspect mynet</span><span class="desc">Inspect network details</span></div>
+        <div class="cmd-row"><span class="cmd">docker network connect mynet myapp</span><span class="desc">Connect running container</span></div>
+        <div class="cmd-row"><span class="cmd">docker network disconnect mynet myapp</span><span class="desc">Disconnect from network</span></div>
+        <div class="cmd-row"><span class="cmd">docker network rm mynet</span><span class="desc">Delete network</span></div>
+        <div class="cmd-row"><span class="cmd">docker network prune</span><span class="desc">Remove unused networks</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot dot-blue"></span>Network driver types</div>
+        <table>
+          <tr><th>Driver</th><th>Use case</th></tr>
+          <tr><td>bridge</td><td class="note">Default. Isolated network on single host. Containers talk by name on custom bridge.</td></tr>
+          <tr><td>host</td><td class="note">Container shares host network stack. No isolation. Best performance.</td></tr>
+          <tr><td>none</td><td class="note">Fully isolated. No networking at all.</td></tr>
+          <tr><td>overlay</td><td class="note">Multi-host (Swarm/Kubernetes). Connects containers across nodes.</td></tr>
+          <tr><td>macvlan</td><td class="note">Container gets its own MAC. Appears as physical device on network.</td></tr>
+        </table>
+        <div class="tip"><strong>Key:</strong> Containers on the same custom bridge network can reach each other by container name (built-in DNS). Default bridge does NOT have this.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 7: VOLUMES -->
+  <div class="section">
+    <div class="section-title">07 — Volumes & storage</div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title"><span class="dot dot-green"></span>Volume commands</div>
+        <div class="cmd-row"><span class="cmd">docker volume create mydata</span><span class="desc">Create named volume</span></div>
+        <div class="cmd-row"><span class="cmd">docker volume ls</span><span class="desc">List all volumes</span></div>
+        <div class="cmd-row"><span class="cmd">docker volume inspect mydata</span><span class="desc">Details (mountpoint, driver)</span></div>
+        <div class="cmd-row"><span class="cmd">docker volume rm mydata</span><span class="desc">Remove volume</span></div>
+        <div class="cmd-row"><span class="cmd">docker volume prune</span><span class="desc">Remove all unused volumes</span></div>
+        <div class="cmd-row"><span class="cmd">docker run -v mydata:/var/lib/mysql mysql</span><span class="desc">Mount named volume</span></div>
+        <div class="cmd-row"><span class="cmd">docker run -v $(pwd):/app myapp</span><span class="desc">Bind mount current directory</span></div>
+        <div class="cmd-row"><span class="cmd">docker run --tmpfs /tmp myapp</span><span class="desc">In-memory tmpfs mount</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot dot-amber"></span>Volume vs bind mount vs tmpfs</div>
+        <table>
+          <tr><th></th><th>Volume</th><th>Bind Mount</th><th>tmpfs</th></tr>
+          <tr><td class="note">Managed by</td><td>Docker</td><td>Host OS</td><td>Memory</td></tr>
+          <tr><td class="note">Best for</td><td>Production data</td><td>Local dev</td><td>Temp/secrets</td></tr>
+          <tr><td class="note">Portable</td><td>✅ Yes</td><td>❌ No</td><td>✅ Yes</td></tr>
+          <tr><td class="note">Persists</td><td>✅ Yes</td><td>✅ Yes</td><td>❌ No</td></tr>
+          <tr><td class="note">Performance</td><td>Good</td><td>Good (native)</td><td>Best</td></tr>
+        </table>
+        <div class="warn"><strong>Interview tip:</strong> If a container is deleted, volumes are NOT deleted automatically. You must explicitly run <code>docker volume rm</code> or <code>docker run --rm -v ...</code>.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 8: COMPOSE -->
+  <div class="section">
+    <div class="section-title">08 — Docker Compose</div>
+    <div class="card-full">
+      <div class="card-title"><span class="dot dot-pink"></span>Complete docker-compose.yml reference</div>
+      <div class="code-block">
+<span class="kw">version</span>: <span class="str">'3.8'</span>
+
+<span class="kw">services</span>:
+  <span class="val">web</span>:
+    <span class="kw">image</span>: myapp:latest
+    <span class="cmt"># OR build from Dockerfile:</span>
+    <span class="kw">build</span>:
+      <span class="kw">context</span>: .
+      <span class="kw">dockerfile</span>: Dockerfile.prod
+      <span class="kw">args</span>:
+        BUILD_ENV: production
+    <span class="kw">container_name</span>: web_app
+    <span class="kw">ports</span>:
+      - <span class="str">"8080:80"</span>
+    <span class="kw">environment</span>:
+      - DB_HOST=db
+      - DB_PORT=5432
+    <span class="kw">env_file</span>:
+      - .env
+    <span class="kw">depends_on</span>:
+      db:
+        <span class="kw">condition</span>: service_healthy
+    <span class="kw">networks</span>:
+      - appnet
+    <span class="kw">volumes</span>:
+      - ./src:/app/src          <span class="cmt"># bind mount for dev</span>
+    <span class="kw">restart</span>: unless-stopped
+    <span class="kw">deploy</span>:
+      <span class="kw">replicas</span>: <span class="val">2</span>
+      <span class="kw">resources</span>:
+        <span class="kw">limits</span>:
+          <span class="kw">memory</span>: 512M
+          <span class="kw">cpus</span>: <span class="str">'0.5'</span>
+
+  <span class="val">db</span>:
+    <span class="kw">image</span>: postgres:15-alpine
+    <span class="kw">volumes</span>:
+      - pgdata:/var/lib/postgresql/data
+    <span class="kw">environment</span>:
+      POSTGRES_DB: mydb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: secret
+    <span class="kw">healthcheck</span>:
+      test: [<span class="str">"CMD"</span>, <span class="str">"pg_isready"</span>, <span class="str">"-U"</span>, <span class="str">"user"</span>]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    <span class="kw">networks</span>:
+      - appnet
+
+<span class="kw">volumes</span>:
+  pgdata:
+
+<span class="kw">networks</span>:
+  appnet:
+    <span class="kw">driver</span>: bridge
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:16px;">
+      <div class="card">
+        <div class="card-title"><span class="dot dot-blue"></span>Compose commands</div>
+        <div class="cmd-row"><span class="cmd">docker compose up</span><span class="desc">Start all services</span></div>
+        <div class="cmd-row"><span class="cmd">docker compose up -d</span><span class="desc">Start in background</span></div>
+        <div class="cmd-row"><span class="cmd">docker compose up --build</span><span class="desc">Rebuild images then start</span></div>
+        <div class="cmd-row"><span class="cmd">docker compose down</span><span class="desc">Stop & remove containers</span></div>
+        <div class="cmd-row"><span class="cmd">docker compose down -v</span><span class="desc">Also remove volumes</span></div>
+        <div class="cmd-row"><span class="cmd">docker compose ps</span><span class="desc">List service containers</span></div>
+        <div class="cmd-row"><span class="cmd">docker compose logs -f web</span><span class="desc">Follow service logs</span></div>
+        <div class="cmd-row"><span class="cmd">docker compose exec web bash</span><span class="desc">Shell into service</span></div>
+        <div class="cmd-row"><span class="cmd">docker compose restart web</span><span class="desc">Restart single service</span></div>
+        <div class="cmd-row"><span class="cmd">docker compose scale web=3</span><span class="desc">Scale service to 3 replicas</span></div>
+        <div class="cmd-row"><span class="cmd">docker compose config</span><span class="desc">Validate & show final config</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot dot-green"></span>Restart policies</div>
+        <table>
+          <tr><th>Policy</th><th>Behavior</th></tr>
+          <tr><td>no</td><td class="note">Never restart (default)</td></tr>
+          <tr><td>always</td><td class="note">Always restart, including on Docker daemon restart</td></tr>
+          <tr><td>on-failure</td><td class="note">Only if container exits with non-zero code</td></tr>
+          <tr><td>unless-stopped</td><td class="note">Always restart unless manually stopped</td></tr>
+        </table>
+        <div class="tip" style="margin-top:12px;"><strong>Production default:</strong> Use <code>unless-stopped</code> for services, <code>on-failure</code> for jobs/migrations.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 9: BEST PRACTICES -->
+  <div class="section">
+    <div class="section-title">09 — Best practices & optimization</div>
+    <div class="grid3">
+      <div class="card">
+        <div class="card-title"><span class="dot dot-blue"></span>Image size reduction</div>
+        <div class="cmd-row"><span class="desc" style="color:var(--green);">✓</span><span class="desc">Use alpine/distroless base images</span></div>
+        <div class="cmd-row"><span class="desc" style="color:var(--green);">✓</span><span class="desc">Multi-stage builds (exclude build tools)</span></div>
+        <div class="cmd-row"><span class="desc" style="color:var(--green);">✓</span><span class="desc">Chain RUN commands with &&</span></div>
+        <div class="cmd-row"><span class="desc" style="color:var(--green);">✓</span><span class="desc">Clean package caches in same RUN layer</span></div>
+        <div class="cmd-row"><span class="desc" style="color:var(--green);">✓</span><span class="desc">Use .dockerignore aggressively</span></div>
+        <div class="cmd-row"><span class="desc" style="color:var(--red);">✗</span><span class="desc">Don't apt-get without --no-cache</span></div>
+        <div class="cmd-row"><span class="desc" style="color:var(--red);">✗</span><span class="desc">Don't copy entire repo then delete files</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot dot-amber"></span>Build cache optimization</div>
+        <div class="cmd-row"><span class="desc" style="color:var(--green);">✓</span><span class="desc">Order: rarely changes → often changes</span></div>
+        <div class="cmd-row"><span class="desc" style="color:var(--green);">✓</span><span class="desc">COPY package.json before COPY . .</span></div>
+        <div class="cmd-row"><span class="desc" style="color:var(--green);">✓</span><span class="desc">Use --mount=type=cache in BuildKit</span></div>
+        <div class="cmd-row"><span class="desc" style="color:var(--green);">✓</span><span class="desc">Pin base image versions (not :latest)</span></div>
+        <div class="cmd-row"><span class="desc" style="color:var(--red);">✗</span><span class="desc">Don't COPY . . early in Dockerfile</span></div>
+        <div class="cmd-row"><span class="desc" style="color:var(--red);">✗</span><span class="desc">Don't use ADD when COPY is sufficient</span></div>
+        <div class="cmd-row"><span class="desc" style="color:var(--red);">✗</span><span class="desc">Don't install unnecessary packages</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot dot-red"></span>Security best practices</div>
+        <div class="cmd-row"><span class="desc" style="color:var(--green);">✓</span><span class="desc">Run as non-root user (USER directive)</span></div>
+        <div class="cmd-row"><span class="desc" style="color:var(--green);">✓</span><span class="desc">Scan images: docker scout or trivy</span></div>
+        <div class="cmd-row"><span class="desc" style="color:var(--green);">✓</span><span class="desc">Use read-only filesystem where possible</span></div>
+        <div class="cmd-row"><span class="desc" style="color:var(--green);">✓</span><span class="desc">Pass secrets via env vars or secrets</span></div>
+        <div class="cmd-row"><span class="desc" style="color:var(--green);">✓</span><span class="desc">Use COPY --chown=user:group</span></div>
+        <div class="cmd-row"><span class="desc" style="color:var(--red);">✗</span><span class="desc">Don't hardcode secrets in Dockerfile</span></div>
+        <div class="cmd-row"><span class="desc" style="color:var(--red);">✗</span><span class="desc">Don't run containers as root</span></div>
+      </div>
+    </div>
+    <div class="card-full" style="margin-top:16px;">
+      <div class="card-title"><span class="dot dot-green"></span>.dockerignore — always include this</div>
+      <div class="code-block">
+<span class="cmt"># Version control</span>
+.git
+.gitignore
+
+<span class="cmt"># Dependencies (rebuilt inside container)</span>
+node_modules
+vendor/
+
+<span class="cmt"># Build artifacts</span>
+dist/
+build/
+*.pyc
+__pycache__/
+
+<span class="cmt"># Local env & secrets</span>
+.env
+.env.*
+*.pem
+*.key
+
+<span class="cmt"># Logs & temp</span>
+*.log
+tmp/
+.DS_Store
+
+<span class="cmt"># IDE files</span>
+.vscode/
+.idea/
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 10: SYSTEM CLEANUP -->
+  <div class="section">
+    <div class="section-title">10 — System cleanup & housekeeping</div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title"><span class="dot dot-red"></span>Prune commands</div>
+        <div class="cmd-row"><span class="cmd">docker system prune</span><span class="desc">Remove stopped containers, unused networks, dangling images</span></div>
+        <div class="cmd-row"><span class="cmd">docker system prune -a</span><span class="desc">Also remove unused images (not just dangling)</span></div>
+        <div class="cmd-row"><span class="cmd">docker system prune -a --volumes</span><span class="desc">⚠️ Also removes volumes (data loss!)</span></div>
+        <div class="cmd-row"><span class="cmd">docker image prune</span><span class="desc">Remove dangling images only</span></div>
+        <div class="cmd-row"><span class="cmd">docker container prune</span><span class="desc">Remove all stopped containers</span></div>
+        <div class="cmd-row"><span class="cmd">docker volume prune</span><span class="desc">Remove all unused volumes</span></div>
+        <div class="cmd-row"><span class="cmd">docker network prune</span><span class="desc">Remove all unused networks</span></div>
+        <div class="cmd-row"><span class="cmd">docker system df</span><span class="desc">Show disk usage by Docker objects</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot dot-purple"></span>Quick reference — interview essentials</div>
+        <table>
+          <tr><th>Concept</th><th>One-liner answer</th></tr>
+          <tr><td>Image vs Container</td><td class="note">Image = blueprint (read-only). Container = running instance.</td></tr>
+          <tr><td>Layer caching</td><td class="note">Each instruction is a cached layer; order from stable→changing.</td></tr>
+          <tr><td>Multi-stage build</td><td class="note">Multiple FROM stages; copy only artifacts to slim final image.</td></tr>
+          <tr><td>CMD vs ENTRYPOINT</td><td class="note">ENTRYPOINT = fixed binary. CMD = overridable default args.</td></tr>
+          <tr><td>Volume vs bind</td><td class="note">Volume = Docker-managed (prod). Bind = host path (dev).</td></tr>
+          <tr><td>Bridge vs host</td><td class="note">Bridge = isolated network. Host = shares host network stack.</td></tr>
+          <tr><td>docker stop vs kill</td><td class="note">stop = SIGTERM (graceful). kill = SIGKILL (immediate).</td></tr>
+          <tr><td>COPY vs ADD</td><td class="note">COPY = simple (preferred). ADD = extracts tars, fetches URLs.</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  🐳 Docker Cheat Sheet &nbsp;·&nbsp; DevOps Interview Prep &nbsp;·&nbsp; Sysadmin → DevOps
+</div>
+
+</body>
+</html>
