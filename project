@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docker Real-Time Project — Task Manager App</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f1eb;
+  --ink:#1a1410;
+  --ink2:#5a4f44;
+  --ink3:#9a8e82;
+  --cream:#fffdf8;
+  --rule:#d6cfc4;
+  --accent:#c84b1a;
+  --accent2:#2d6a4f;
+  --accent3:#1a4f8a;
+  --yellow:#f5c842;
+  --yellow-bg:#fdf8e1;
+  --green-bg:#e8f5ee;
+  --blue-bg:#e8f0fa;
+  --code-bg:#1a1410;
+  --code-text:#e8ddd0;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;line-height:1.6;}
+
+/* Hero */
+.hero{
+  background:var(--ink);color:var(--bg);
+  padding:56px 48px 48px;
+  position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;right:-40px;top:-40px;
+  width:280px;height:280px;
+  border:40px solid rgba(255,255,255,0.04);
+  border-radius:50%;
+}
+.hero::after{
+  content:'';position:absolute;right:60px;top:40px;
+  width:140px;height:140px;
+  border:20px solid rgba(200,75,26,0.2);
+  border-radius:50%;
+}
+.hero-tag{
+  font-size:11px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--accent);font-family:'DM Mono',monospace;
+  margin-bottom:18px;
+}
+.hero h1{
+  font-family:'Fraunces',serif;font-size:clamp(36px,5vw,60px);
+  font-weight:900;line-height:1.05;letter-spacing:-1px;
+  margin-bottom:16px;
+}
+.hero h1 em{color:var(--yellow);font-style:italic;}
+.hero p{font-size:15px;color:rgba(244,241,235,0.7);max-width:580px;line-height:1.7;}
+.hero-stack{
+  display:flex;flex-wrap:wrap;gap:8px;margin-top:24px;
+}
+.stack-pill{
+  font-family:'DM Mono',monospace;font-size:11px;
+  padding:4px 10px;border-radius:4px;
+  background:rgba(255,255,255,0.08);color:var(--bg);
+  border:1px solid rgba(255,255,255,0.12);
+}
+.stack-pill.hot{background:rgba(200,75,26,0.3);border-color:rgba(200,75,26,0.5);color:#f5c842;}
+
+/* Nav / TOC */
+.toc{
+  background:var(--cream);border-bottom:1px solid var(--rule);
+  padding:16px 48px;display:flex;flex-wrap:wrap;gap:6px;
+  position:sticky;top:0;z-index:100;
+}
+.toc a{
+  font-size:12px;font-family:'DM Mono',monospace;
+  color:var(--ink2);text-decoration:none;
+  padding:4px 10px;border-radius:4px;
+  border:1px solid transparent;
+  transition:all .15s;
+}
+.toc a:hover{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+
+/* Main layout */
+.wrap{max-width:1080px;margin:0 auto;padding:48px 48px;}
+@media(max-width:768px){.wrap{padding:24px 20px;}.hero,.toc{padding:32px 20px;}}
+
+/* Section */
+.section{margin-bottom:56px;}
+.section-label{
+  display:flex;align-items:center;gap:12px;
+  font-family:'DM Mono',monospace;font-size:11px;
+  letter-spacing:2px;text-transform:uppercase;
+  color:var(--accent);margin-bottom:24px;
+}
+.section-label::after{content:'';flex:1;height:1px;background:var(--rule);}
+.section-num{
+  background:var(--accent);color:#fff;
+  width:24px;height:24px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:500;flex-shrink:0;
+}
+
+/* Typography */
+h2{font-family:'Fraunces',serif;font-size:28px;font-weight:700;margin-bottom:12px;line-height:1.2;}
+h3{font-family:'Fraunces',serif;font-size:20px;font-weight:700;margin-bottom:10px;color:var(--ink);}
+h4{font-size:13px;font-weight:600;letter-spacing:0.5px;margin-bottom:8px;color:var(--ink);}
+p{font-size:14px;color:var(--ink2);line-height:1.75;margin-bottom:12px;}
+
+/* Architecture diagram */
+.arch{
+  background:var(--cream);border:1px solid var(--rule);
+  border-radius:12px;padding:28px;margin:20px 0;
+}
+.arch-row{
+  display:flex;align-items:center;justify-content:center;
+  gap:0;flex-wrap:wrap;margin:8px 0;
+}
+.arch-box{
+  border-radius:8px;padding:10px 18px;
+  font-family:'DM Mono',monospace;font-size:12px;
+  font-weight:500;text-align:center;min-width:120px;
+  border:1.5px solid;
+}
+.arch-arrow{font-size:18px;color:var(--ink3);padding:0 10px;}
+.arch-label{font-size:11px;font-family:'DM Mono',monospace;color:var(--ink3);text-align:center;margin-top:4px;}
+.box-blue{background:var(--blue-bg);border-color:#a8c4f0;color:var(--accent3);}
+.box-green{background:var(--green-bg);border-color:#a8d4bc;color:var(--accent2);}
+.box-orange{background:#fef0e8;border-color:#f0b090;color:var(--accent);}
+.box-yellow{background:var(--yellow-bg);border-color:#e5d090;color:#8a6a00;}
+.box-dark{background:var(--ink);border-color:var(--ink);color:var(--bg);}
+
+/* File tree */
+.filetree{
+  background:var(--code-bg);border-radius:10px;
+  padding:20px 24px;font-family:'DM Mono',monospace;
+  font-size:13px;line-height:2;overflow-x:auto;
+}
+.ft-dir{color:#7ec8e3;}
+.ft-file{color:var(--code-text);}
+.ft-comment{color:#5a5048;}
+.ft-special{color:var(--yellow);}
+
+/* Code blocks */
+.code-wrap{
+  background:var(--code-bg);border-radius:10px;
+  overflow:hidden;margin:12px 0;
+}
+.code-title{
+  background:rgba(255,255,255,0.06);
+  padding:8px 16px;
+  font-family:'DM Mono',monospace;font-size:11px;
+  color:var(--ink3);display:flex;align-items:center;
+  justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.code-title .filename{color:var(--yellow);}
+pre{
+  padding:18px 20px;font-family:'DM Mono',monospace;
+  font-size:12.5px;line-height:1.8;overflow-x:auto;
+  color:var(--code-text);
+}
+.c{color:#5a7060;} /* comment */
+.k{color:#7ec8e3;} /* keyword */
+.s{color:#b5d99c;} /* string */
+.v{color:#f5c842;} /* value/number */
+.f{color:#f0a0c0;} /* flag/option */
+.e{color:var(--accent);} /* emphasis */
+
+/* Cards grid */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+@media(max-width:700px){.grid2,.grid3{grid-template-columns:1fr;}}
+
+.card{
+  background:var(--cream);border:1px solid var(--rule);
+  border-radius:10px;padding:18px;
+}
+.card-icon{font-size:22px;margin-bottom:10px;}
+.card h4{margin-bottom:6px;}
+.card p{font-size:13px;margin:0;}
+
+/* Step list */
+.steps{counter-reset:step;}
+.step{
+  display:flex;gap:16px;margin-bottom:24px;
+  padding-bottom:24px;border-bottom:1px solid var(--rule);
+}
+.step:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.step-num{
+  background:var(--ink);color:var(--bg);
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'DM Mono',monospace;font-size:13px;font-weight:500;
+  flex-shrink:0;margin-top:2px;
+}
+.step-body{flex:1;}
+.step-body h4{font-size:14px;margin-bottom:6px;}
+.step-body p{font-size:13px;margin-bottom:8px;}
+
+/* Callout boxes */
+.callout{
+  border-radius:8px;padding:14px 16px;
+  margin:14px 0;font-size:13px;
+  display:flex;gap:10px;align-items:flex-start;
+}
+.callout-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+.callout-body{color:var(--ink2);line-height:1.65;}
+.callout-body strong{color:var(--ink);}
+.tip{background:var(--blue-bg);border:1px solid #c0d4f0;}
+.warn{background:var(--yellow-bg);border:1px solid #e0cc80;}
+.good{background:var(--green-bg);border:1px solid #a0cdb0;}
+
+/* Interview badges */
+.interview-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(200,75,26,0.1);border:1px solid rgba(200,75,26,0.25);
+  color:var(--accent);font-size:11px;font-family:'DM Mono',monospace;
+  padding:3px 10px;border-radius:20px;margin-left:8px;
+}
+
+/* Command table */
+table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0;}
+th{text-align:left;padding:9px 12px;font-size:11px;letter-spacing:0.5px;
+  text-transform:uppercase;color:var(--ink2);
+  border-bottom:2px solid var(--rule);font-family:'DM Mono',monospace;}
+td{padding:9px 12px;border-bottom:1px solid var(--rule);}
+td:first-child{font-family:'DM Mono',monospace;font-size:12px;color:var(--accent3);}
+td.note{color:var(--ink2);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(0,0,0,0.02);}
+
+/* Footer */
+footer{
+  background:var(--ink);color:var(--bg);
+  text-align:center;padding:32px;
+  font-size:13px;color:rgba(244,241,235,0.5);
+}
+footer strong{color:var(--yellow);}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">Real-Time Docker Project</div>
+  <h1>🐳 Full-Stack <em>Task Manager</em><br>with Docker</h1>
+  <p>A production-style project covering every Docker concept — multi-stage builds, Compose, networking, volumes, health checks, monitoring, and CI/CD pipeline. Perfect for interviews.</p>
+  <div class="hero-stack">
+    <span class="stack-pill hot">Multi-stage Build</span>
+    <span class="stack-pill hot">Docker Compose</span>
+    <span class="stack-pill hot">Custom Networks</span>
+    <span class="stack-pill">React Frontend</span>
+    <span class="stack-pill">Node.js API</span>
+    <span class="stack-pill">PostgreSQL</span>
+    <span class="stack-pill">Redis Cache</span>
+    <span class="stack-pill">Nginx Proxy</span>
+    <span class="stack-pill hot">Health Checks</span>
+    <span class="stack-pill hot">Volumes</span>
+    <span class="stack-pill">Prometheus</span>
+    <span class="stack-pill">Jenkins CI/CD</span>
+  </div>
+</div>
+
+<!-- TOC -->
+<div class="toc">
+  <a href="#overview">Overview</a>
+  <a href="#architecture">Architecture</a>
+  <a href="#structure">File Structure</a>
+  <a href="#dockerfiles">Dockerfiles</a>
+  <a href="#compose">Docker Compose</a>
+  <a href="#nginx">Nginx</a>
+  <a href="#networking">Networking</a>
+  <a href="#volumes">Volumes</a>
+  <a href="#monitoring">Monitoring</a>
+  <a href="#cicd">CI/CD</a>
+  <a href="#commands">Commands</a>
+  <a href="#interview">Interview Q&A</a>
+</div>
+
+<div class="wrap">
+
+  <!-- 1. OVERVIEW -->
+  <div class="section" id="overview">
+    <div class="section-label"><span class="section-num">1</span>Project overview</div>
+    <h2>What you're building</h2>
+    <p>A production-ready <strong>Task Manager application</strong> — a real app companies actually build. It has a React frontend, Node.js REST API, PostgreSQL database, Redis for session caching, and Nginx as a reverse proxy. Every service runs in its own container with proper networking, volumes, health checks, and monitoring.</p>
+
+    <div class="grid3" style="margin-top:20px;">
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h4>What this covers</h4>
+        <p>Multi-stage builds, named volumes, custom networks, health checks, depends_on, environment variables, secrets, Nginx proxy, monitoring stack.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💼</div>
+        <h4>Why it's interview gold</h4>
+        <p>Mirrors exactly what companies run in production. You can explain every design decision — why Redis, why multi-stage, why Nginx — with real reasons.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⏱️</div>
+        <h4>Time to complete</h4>
+        <p>2–3 days to set up everything. 1 week to understand deeply. This is your portfolio project + interview talking point.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. ARCHITECTURE -->
+  <div class="section" id="architecture">
+    <div class="section-label"><span class="section-num">2</span>Architecture</div>
+    <h2>System architecture</h2>
+    <div class="arch">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div class="arch-row">
+          <div style="text-align:center;">
+            <div class="arch-box box-dark">Browser / User</div>
+          </div>
+          <div class="arch-arrow">↓ :80</div>
+          <div style="text-align:center;">
+            <div class="arch-box box-orange">Nginx (proxy)</div>
+            <div class="arch-label">Port 80 → routes traffic</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:center;gap:60px;margin:16px 0;">
+          <div style="text-align:center;">
+            <div class="arch-arrow">↓ /</div>
+            <div class="arch-box box-blue">React Frontend</div>
+            <div class="arch-label">Port 3000 (internal)</div>
+          </div>
+          <div style="text-align:center;">
+            <div class="arch-arrow">↓ /api</div>
+            <div class="arch-box box-green">Node.js API</div>
+            <div class="arch-label">Port 5000 (internal)</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:center;gap:60px;margin:16px 0;">
+          <div style="text-align:center;">
+            <div class="arch-arrow">↓</div>
+            <div class="arch-box box-yellow">PostgreSQL</div>
+            <div class="arch-label">Port 5432 (internal only)</div>
+          </div>
+          <div style="text-align:center;">
+            <div class="arch-arrow">↓</div>
+            <div class="arch-box box-yellow">Redis Cache</div>
+            <div class="arch-label">Port 6379 (internal only)</div>
+          </div>
+        </div>
+        <div style="margin-top:16px;text-align:center;">
+          <div class="arch-box box-orange" style="display:inline-block;">Prometheus + Grafana</div>
+          <div class="arch-label">Monitoring (Port 9090 / 3001)</div>
+        </div>
+      </div>
+    </div>
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body"><strong>Interview point:</strong> Only Nginx exposes a port to the outside world (port 80). All other services communicate on an internal Docker network — this is a real security pattern used in production.</div>
+    </div>
+  </div>
+
+  <!-- 3. FILE STRUCTURE -->
+  <div class="section" id="structure">
+    <div class="section-label"><span class="section-num">3</span>Project file structure</div>
+    <h2>Directory layout</h2>
+    <div class="filetree">
+<span class="ft-dir">taskmanager/</span>
+<span class="ft-comment">│</span>
+<span class="ft-comment">├── 🐳 Docker files</span>
+<span class="ft-special">├── docker-compose.yml</span>          <span class="ft-comment"># Main compose file (dev)</span>
+<span class="ft-special">├── docker-compose.prod.yml</span>      <span class="ft-comment"># Production overrides</span>
+<span class="ft-special">├── docker-compose.monitor.yml</span>   <span class="ft-comment"># Monitoring stack</span>
+<span class="ft-special">├── .env</span>                         <span class="ft-comment"># Environment variables</span>
+<span class="ft-special">├── .dockerignore</span>                <span class="ft-comment"># Global ignore rules</span>
+<span class="ft-comment">│</span>
+<span class="ft-comment">├── 🌐 frontend/</span>
+<span class="ft-dir">│   ├── Dockerfile</span>              <span class="ft-comment"># Multi-stage build</span>
+<span class="ft-dir">│   ├── Dockerfile.dev</span>          <span class="ft-comment"># Dev with hot-reload</span>
+<span class="ft-file">│   ├── src/</span>
+<span class="ft-file">│   ├── public/</span>
+<span class="ft-file">│   └── package.json</span>
+<span class="ft-comment">│</span>
+<span class="ft-comment">├── ⚙️  backend/</span>
+<span class="ft-dir">│   ├── Dockerfile</span>              <span class="ft-comment"># Multi-stage build</span>
+<span class="ft-dir">│   ├── Dockerfile.dev</span>          <span class="ft-comment"># Dev with nodemon</span>
+<span class="ft-file">│   ├── src/</span>
+<span class="ft-file">│   │   ├── app.js</span>
+<span class="ft-file">│   │   ├── routes/</span>
+<span class="ft-file">│   │   └── db/</span>
+<span class="ft-file">│   └── package.json</span>
+<span class="ft-comment">│</span>
+<span class="ft-comment">├── 🔀 nginx/</span>
+<span class="ft-dir">│   ├── nginx.conf</span>              <span class="ft-comment"># Reverse proxy config</span>
+<span class="ft-dir">│   └── Dockerfile</span>
+<span class="ft-comment">│</span>
+<span class="ft-comment">├── 🗄️  postgres/</span>
+<span class="ft-file">│   └── init.sql</span>               <span class="ft-comment"># DB init script</span>
+<span class="ft-comment">│</span>
+<span class="ft-comment">├── 📊 monitoring/</span>
+<span class="ft-file">│   ├── prometheus.yml</span>
+<span class="ft-file">│   └── grafana/</span>
+<span class="ft-comment">│</span>
+<span class="ft-comment">└── 🔧 jenkins/</span>
+<span class="ft-dir">    ├── Jenkinsfile</span>             <span class="ft-comment"># CI/CD pipeline</span>
+<span class="ft-dir">    └── Dockerfile</span>
+    </div>
+  </div>
+
+  <!-- 4. DOCKERFILES -->
+  <div class="section" id="dockerfiles">
+    <div class="section-label"><span class="section-num">4</span>Dockerfiles</div>
+    <h2>Multi-stage Dockerfiles <span class="interview-badge">🎯 Most asked</span></h2>
+
+    <h3>Backend — Node.js API</h3>
+    <div class="code-wrap">
+      <div class="code-title"><span class="filename">backend/Dockerfile</span><span>Multi-stage production build</span></div>
+      <pre><span class="c"># ═══════════════════════════════</span>
+<span class="c"># Stage 1: Install dependencies</span>
+<span class="c"># ═══════════════════════════════</span>
+<span class="k">FROM</span> <span class="v">node:18-alpine</span> <span class="k">AS</span> <span class="s">deps</span>
+<span class="k">WORKDIR</span> <span class="s">/app</span>
+
+<span class="c"># Copy only package files first (layer cache trick)</span>
+<span class="k">COPY</span> package*.json ./
+<span class="k">RUN</span> npm ci --only=production && npm cache clean --force
+
+<span class="c"># ═══════════════════════════════</span>
+<span class="c"># Stage 2: Production image</span>
+<span class="c"># ═══════════════════════════════</span>
+<span class="k">FROM</span> <span class="v">node:18-alpine</span> <span class="k">AS</span> <span class="s">production</span>
+
+<span class="c"># Security: create non-root user</span>
+<span class="k">RUN</span> addgroup -S appgroup && \
+    adduser -S appuser -G appgroup
+
+<span class="k">WORKDIR</span> <span class="s">/app</span>
+
+<span class="c"># Copy deps from stage 1 (no build tools)</span>
+<span class="k">COPY</span> <span class="f">--from=deps</span> /app/node_modules ./node_modules
+<span class="k">COPY</span> <span class="f">--chown=appuser:appgroup</span> src/ ./src/
+<span class="k">COPY</span> <span class="f">--chown=appuser:appgroup</span> package.json ./
+
+<span class="c"># Metadata</span>
+<span class="k">LABEL</span> maintainer=<span class="s">"devops-team"</span>
+<span class="k">LABEL</span> version=<span class="s">"1.0"</span>
+<span class="k">LABEL</span> description=<span class="s">"TaskManager API"</span>
+
+<span class="c"># Runtime config</span>
+<span class="k">ENV</span> NODE_ENV=<span class="v">production</span>
+<span class="k">ENV</span> PORT=<span class="v">5000</span>
+<span class="k">USER</span> appuser
+<span class="k">EXPOSE</span> <span class="v">5000</span>
+
+<span class="c"># Health check</span>
+<span class="k">HEALTHCHECK</span> --interval=<span class="v">30s</span> --timeout=<span class="v">10s</span> \
+  --start-period=<span class="v">15s</span> --retries=<span class="v">3</span> \
+  <span class="k">CMD</span> wget <span class="f">-qO-</span> http://localhost:5000/health || exit 1
+
+<span class="k">CMD</span> [<span class="s">"node"</span>, <span class="s">"src/app.js"</span>]</pre>
+    </div>
+
+    <h3 style="margin-top:24px;">Frontend — React App</h3>
+    <div class="code-wrap">
+      <div class="code-title"><span class="filename">frontend/Dockerfile</span><span>3-stage: build → test → nginx serve</span></div>
+      <pre><span class="c"># Stage 1: Install deps</span>
+<span class="k">FROM</span> <span class="v">node:18-alpine</span> <span class="k">AS</span> <span class="s">deps</span>
+<span class="k">WORKDIR</span> <span class="s">/app</span>
+<span class="k">COPY</span> package*.json ./
+<span class="k">RUN</span> npm ci
+
+<span class="c"># Stage 2: Build React app</span>
+<span class="k">FROM</span> <span class="v">node:18-alpine</span> <span class="k">AS</span> <span class="s">builder</span>
+<span class="k">WORKDIR</span> <span class="s">/app</span>
+<span class="k">COPY</span> <span class="f">--from=deps</span> /app/node_modules ./node_modules
+<span class="k">COPY</span> . .
+<span class="k">ARG</span> REACT_APP_API_URL
+<span class="k">ENV</span> REACT_APP_API_URL=$REACT_APP_API_URL
+<span class="k">RUN</span> npm run build
+
+<span class="c"># Stage 3: Serve with Nginx (tiny final image ~25MB)</span>
+<span class="k">FROM</span> <span class="v">nginx:1.25-alpine</span> <span class="k">AS</span> <span class="s">production</span>
+<span class="k">COPY</span> <span class="f">--from=builder</span> /app/build /usr/share/nginx/html
+<span class="k">COPY</span> nginx.conf /etc/nginx/conf.d/default.conf
+<span class="k">EXPOSE</span> <span class="v">3000</span>
+<span class="k">HEALTHCHECK</span> <span class="k">CMD</span> wget <span class="f">-qO-</span> http://localhost:3000 || exit 1
+<span class="k">CMD</span> [<span class="s">"nginx"</span>, <span class="s">"-g"</span>, <span class="s">"daemon off;"</span>]</pre>
+    </div>
+
+    <h3 style="margin-top:24px;">Dev Dockerfile (with hot reload)</h3>
+    <div class="code-wrap">
+      <div class="code-title"><span class="filename">backend/Dockerfile.dev</span><span>Development only</span></div>
+      <pre><span class="k">FROM</span> <span class="v">node:18-alpine</span>
+<span class="k">WORKDIR</span> <span class="s">/app</span>
+<span class="k">RUN</span> npm install <span class="f">-g</span> nodemon
+<span class="k">COPY</span> package*.json ./
+<span class="k">RUN</span> npm install       <span class="c"># includes devDependencies</span>
+<span class="k">COPY</span> . .
+<span class="k">EXPOSE</span> <span class="v">5000</span>
+<span class="c"># nodemon watches for file changes and restarts</span>
+<span class="k">CMD</span> [<span class="s">"nodemon"</span>, <span class="s">"src/app.js"</span>]</pre>
+    </div>
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body"><strong>Why two Dockerfiles?</strong> Dockerfile.dev is for local development with hot-reload (nodemon) and devDependencies. Dockerfile (production) is slim, non-root, no dev tools. This is standard practice in real companies.</div>
+    </div>
+  </div>
+
+  <!-- 5. DOCKER COMPOSE -->
+  <div class="section" id="compose">
+    <div class="section-label"><span class="section-num">5</span>Docker Compose</div>
+    <h2>docker-compose.yml — the core file <span class="interview-badge">🎯 Know this cold</span></h2>
+
+    <div class="code-wrap">
+      <div class="code-title"><span class="filename">docker-compose.yml</span><span>Development environment</span></div>
+      <pre><span class="v">version</span>: <span class="s">'3.8'</span>
+
+<span class="v">services</span>:
+
+  <span class="c"># ─── Nginx Reverse Proxy ──────────────────</span>
+  <span class="e">nginx</span>:
+    <span class="k">build</span>: ./nginx
+    <span class="k">container_name</span>: tm_nginx
+    <span class="k">ports</span>:
+      - <span class="s">"80:80"</span>       <span class="c"># ONLY service exposed to host</span>
+    <span class="k">depends_on</span>:
+      frontend:
+        <span class="k">condition</span>: service_healthy
+      backend:
+        <span class="k">condition</span>: service_healthy
+    <span class="k">networks</span>:
+      - frontend_net
+      - backend_net
+    <span class="k">restart</span>: unless-stopped
+
+  <span class="c"># ─── React Frontend ───────────────────────</span>
+  <span class="e">frontend</span>:
+    <span class="k">build</span>:
+      <span class="k">context</span>: ./frontend
+      <span class="k">dockerfile</span>: Dockerfile.dev
+    <span class="k">container_name</span>: tm_frontend
+    <span class="k">volumes</span>:
+      - ./frontend/src:/app/src   <span class="c"># hot reload</span>
+    <span class="k">environment</span>:
+      - REACT_APP_API_URL=/api
+    <span class="k">networks</span>:
+      - frontend_net
+    <span class="k">healthcheck</span>:
+      test: [<span class="s">"CMD"</span>, <span class="s">"wget"</span>, <span class="s">"-qO-"</span>, <span class="s">"http://localhost:3000"</span>]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  <span class="c"># ─── Node.js API ──────────────────────────</span>
+  <span class="e">backend</span>:
+    <span class="k">build</span>:
+      <span class="k">context</span>: ./backend
+      <span class="k">dockerfile</span>: Dockerfile.dev
+    <span class="k">container_name</span>: tm_backend
+    <span class="k">volumes</span>:
+      - ./backend/src:/app/src    <span class="c"># hot reload</span>
+    <span class="k">environment</span>:
+      - NODE_ENV=development
+      - PORT=5000
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - REDIS_URL=redis://redis:6379
+    <span class="k">depends_on</span>:
+      postgres:
+        <span class="k">condition</span>: service_healthy
+      redis:
+        <span class="k">condition</span>: service_healthy
+    <span class="k">networks</span>:
+      - backend_net
+      - db_net
+    <span class="k">healthcheck</span>:
+      test: [<span class="s">"CMD"</span>, <span class="s">"wget"</span>, <span class="s">"-qO-"</span>, <span class="s">"http://localhost:5000/health"</span>]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    <span class="k">restart</span>: unless-stopped
+
+  <span class="c"># ─── PostgreSQL Database ──────────────────</span>
+  <span class="e">postgres</span>:
+    <span class="k">image</span>: postgres:15-alpine
+    <span class="k">container_name</span>: tm_postgres
+    <span class="k">environment</span>:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    <span class="k">volumes</span>:
+      - pgdata:/var/lib/postgresql/data   <span class="c"># persist data</span>
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    <span class="k">networks</span>:
+      - db_net
+    <span class="k">healthcheck</span>:
+      test: [<span class="s">"CMD-SHELL"</span>, <span class="s">"pg_isready -U ${DB_USER} -d ${DB_NAME}"</span>]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    <span class="c"># NOT exposed to host — internal only</span>
+
+  <span class="c"># ─── Redis Cache ──────────────────────────</span>
+  <span class="e">redis</span>:
+    <span class="k">image</span>: redis:7-alpine
+    <span class="k">container_name</span>: tm_redis
+    <span class="k">command</span>: redis-server --requirepass ${REDIS_PASS}
+    <span class="k">volumes</span>:
+      - redisdata:/data
+    <span class="k">networks</span>:
+      - db_net
+    <span class="k">healthcheck</span>:
+      test: [<span class="s">"CMD"</span>, <span class="s">"redis-cli"</span>, <span class="s">"ping"</span>]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+<span class="c"># ─── Named Volumes ────────────────────────</span>
+<span class="v">volumes</span>:
+  pgdata:      <span class="c"># postgres data survives container restart</span>
+  redisdata:   <span class="c"># redis persistence</span>
+
+<span class="c"># ─── Isolated Networks ────────────────────</span>
+<span class="v">networks</span>:
+  frontend_net:   <span class="c"># nginx ↔ frontend</span>
+    driver: bridge
+  backend_net:    <span class="c"># nginx ↔ backend</span>
+    driver: bridge
+  db_net:         <span class="c"># backend ↔ postgres ↔ redis</span>
+    driver: bridge</pre>
+    </div>
+
+    <div class="callout good">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body"><strong>Why 3 separate networks?</strong> Frontend can't directly talk to the database. Only the backend can reach the DB network. This is network segmentation — a real security pattern. Interviewers love this explanation.</div>
+    </div>
+  </div>
+
+  <!-- 6. NGINX -->
+  <div class="section" id="nginx">
+    <div class="section-label"><span class="section-num">6</span>Nginx reverse proxy</div>
+    <h2>nginx.conf</h2>
+    <div class="code-wrap">
+      <div class="code-title"><span class="filename">nginx/nginx.conf</span><span>Routes / → frontend, /api → backend</span></div>
+      <pre><span class="k">upstream</span> frontend {
+  server frontend:3000;
+}
+
+<span class="k">upstream</span> backend {
+  server backend:5000;
+}
+
+server {
+  listen <span class="v">80</span>;
+  server_name _;
+
+  <span class="c"># Frontend — React app</span>
+  location / {
+    proxy_pass http://frontend;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+  }
+
+  <span class="c"># Backend API — proxied to Node.js</span>
+  location /api/ {
+    proxy_pass http://backend/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  }
+
+  <span class="c"># WebSocket support (if needed)</span>
+  location /ws {
+    proxy_pass http://backend;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+  }
+}</pre>
+    </div>
+  </div>
+
+  <!-- 7. NETWORKING -->
+  <div class="section" id="networking">
+    <div class="section-label"><span class="section-num">7</span>Network architecture</div>
+    <h2>Who can talk to who <span class="interview-badge">🎯 Security pattern</span></h2>
+    <table>
+      <tr><th>Service</th><th>Can reach</th><th>Cannot reach</th><th>Why</th></tr>
+      <tr><td>nginx</td><td>frontend, backend</td><td class="note">postgres, redis</td><td class="note">On frontend_net + backend_net only</td></tr>
+      <tr><td>frontend</td><td>nginx</td><td class="note">backend, postgres, redis</td><td class="note">On frontend_net only</td></tr>
+      <tr><td>backend</td><td>postgres, redis, nginx</td><td class="note">frontend</td><td class="note">On backend_net + db_net</td></tr>
+      <tr><td>postgres</td><td>backend</td><td class="note">nginx, frontend</td><td class="note">On db_net only — isolated</td></tr>
+      <tr><td>redis</td><td>backend</td><td class="note">nginx, frontend</td><td class="note">On db_net only — isolated</td></tr>
+    </table>
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body"><strong>Key:</strong> Containers on different custom networks CANNOT talk to each other. Docker's built-in DNS works by container name — <code>backend</code> can ping <code>postgres</code> because both are on <code>db_net</code>.</div>
+    </div>
+  </div>
+
+  <!-- 8. VOLUMES -->
+  <div class="section" id="volumes">
+    <div class="section-label"><span class="section-num">8</span>Volume strategy</div>
+    <h2>What data goes where</h2>
+    <table>
+      <tr><th>Volume / Mount</th><th>Type</th><th>Service</th><th>Purpose</th></tr>
+      <tr><td>pgdata</td><td class="note">Named volume</td><td>postgres</td><td class="note">DB data persists across container restarts</td></tr>
+      <tr><td>redisdata</td><td class="note">Named volume</td><td>redis</td><td class="note">Redis persistence (RDB snapshots)</td></tr>
+      <tr><td>./backend/src:/app/src</td><td class="note">Bind mount</td><td>backend</td><td class="note">Dev hot-reload — code changes apply instantly</td></tr>
+      <tr><td>./frontend/src:/app/src</td><td class="note">Bind mount</td><td>frontend</td><td class="note">Dev hot-reload for React</td></tr>
+      <tr><td>init.sql → initdb.d/</td><td class="note">Bind mount</td><td>postgres</td><td class="note">Run SQL schema on first start only</td></tr>
+    </table>
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body"><strong>Interview answer:</strong> "In dev, I use bind mounts for source code so changes are reflected immediately. In production, I use named volumes for data and ship the built code inside the image — no bind mounts."</div>
+    </div>
+  </div>
+
+  <!-- 9. ENV FILE -->
+  <div class="section">
+    <div class="section-label"><span class="section-num">9</span>Environment & secrets</div>
+    <h2>.env file</h2>
+    <div class="code-wrap">
+      <div class="code-title"><span class="filename">.env</span><span>Never commit this to Git!</span></div>
+      <pre><span class="c"># Database</span>
+DB_NAME=taskdb
+DB_USER=taskuser
+DB_PASS=SuperSecret123!
+
+<span class="c"># Redis</span>
+REDIS_PASS=RedisSecret456!
+
+<span class="c"># App</span>
+JWT_SECRET=your-jwt-secret-here
+NODE_ENV=development
+
+<span class="c"># Frontend build arg</span>
+REACT_APP_API_URL=/api</pre>
+    </div>
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body"><strong>Always add .env to .gitignore.</strong> Commit a <strong>.env.example</strong> file with placeholder values instead. In production, use Docker Secrets or a vault like HashiCorp Vault / AWS Secrets Manager.</div>
+    </div>
+  </div>
+
+  <!-- 10. MONITORING -->
+  <div class="section" id="monitoring">
+    <div class="section-label"><span class="section-num">10</span>Monitoring stack</div>
+    <h2>Prometheus + Grafana</h2>
+    <div class="code-wrap">
+      <div class="code-title"><span class="filename">docker-compose.monitor.yml</span><span>Run with: docker compose -f docker-compose.yml -f docker-compose.monitor.yml up</span></div>
+      <pre><span class="v">services</span>:
+  <span class="e">prometheus</span>:
+    <span class="k">image</span>: prom/prometheus:latest
+    <span class="k">container_name</span>: tm_prometheus
+    <span class="k">volumes</span>:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    <span class="k">ports</span>:
+      - <span class="s">"9090:9090"</span>
+    <span class="k">networks</span>:
+      - backend_net
+    <span class="k">command</span>:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=15d'
+
+  <span class="e">grafana</span>:
+    <span class="k">image</span>: grafana/grafana:latest
+    <span class="k">container_name</span>: tm_grafana
+    <span class="k">volumes</span>:
+      - grafana_data:/var/lib/grafana
+    <span class="k">ports</span>:
+      - <span class="s">"3001:3000"</span>
+    <span class="k">environment</span>:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASS:-admin}
+    <span class="k">depends_on</span>:
+      - prometheus
+    <span class="k">networks</span>:
+      - backend_net
+
+<span class="v">volumes</span>:
+  prometheus_data:
+  grafana_data:</pre>
+    </div>
+  </div>
+
+  <!-- 11. CI/CD -->
+  <div class="section" id="cicd">
+    <div class="section-label"><span class="section-num">11</span>Jenkins CI/CD pipeline</div>
+    <h2>Jenkinsfile — full pipeline</h2>
+    <div class="code-wrap">
+      <div class="code-title"><span class="filename">Jenkinsfile</span><span>Declarative pipeline</span></div>
+      <pre><span class="k">pipeline</span> {
+  <span class="k">agent</span> any
+
+  <span class="k">environment</span> {
+    IMAGE_NAME  = <span class="s">"taskmanager"</span>
+    REGISTRY    = <span class="s">"your-registry.io"</span>
+    GIT_COMMIT  = sh(returnStdout: true, script: <span class="s">'git rev-parse --short HEAD'</span>).trim()
+  }
+
+  <span class="k">stages</span> {
+    <span class="k">stage</span>(<span class="s">'Checkout'</span>) {
+      steps { checkout scm }
+    }
+
+    <span class="k">stage</span>(<span class="s">'Build Images'</span>) {
+      <span class="k">parallel</span> {
+        <span class="k">stage</span>(<span class="s">'Build Backend'</span>) {
+          steps {
+            sh <span class="s">'docker build -t $REGISTRY/$IMAGE_NAME-backend:$GIT_COMMIT ./backend'</span>
+          }
+        }
+        <span class="k">stage</span>(<span class="s">'Build Frontend'</span>) {
+          steps {
+            sh <span class="s">'docker build -t $REGISTRY/$IMAGE_NAME-frontend:$GIT_COMMIT ./frontend'</span>
+          }
+        }
+      }
+    }
+
+    <span class="k">stage</span>(<span class="s">'Test'</span>) {
+      steps {
+        sh <span class="s">'''
+          docker run --rm \
+            -e NODE_ENV=test \
+            $REGISTRY/$IMAGE_NAME-backend:$GIT_COMMIT \
+            npm test
+        '''</span>
+      }
+    }
+
+    <span class="k">stage</span>(<span class="s">'Security Scan'</span>) {
+      steps {
+        sh <span class="s">'docker scout cves $REGISTRY/$IMAGE_NAME-backend:$GIT_COMMIT'</span>
+      }
+    }
+
+    <span class="k">stage</span>(<span class="s">'Push to Registry'</span>) {
+      steps {
+        <span class="k">withDockerRegistry</span>([credentialsId: <span class="s">'registry-creds'</span>]) {
+          sh <span class="s">'docker push $REGISTRY/$IMAGE_NAME-backend:$GIT_COMMIT'</span>
+          sh <span class="s">'docker push $REGISTRY/$IMAGE_NAME-frontend:$GIT_COMMIT'</span>
+          <span class="c">// Also tag as latest</span>
+          sh <span class="s">'docker tag $REGISTRY/$IMAGE_NAME-backend:$GIT_COMMIT $REGISTRY/$IMAGE_NAME-backend:latest'</span>
+          sh <span class="s">'docker push $REGISTRY/$IMAGE_NAME-backend:latest'</span>
+        }
+      }
+    }
+
+    <span class="k">stage</span>(<span class="s">'Deploy'</span>) {
+      when { branch <span class="s">'main'</span> }
+      steps {
+        sh <span class="s">'docker compose -f docker-compose.prod.yml pull'</span>
+        sh <span class="s">'docker compose -f docker-compose.prod.yml up -d --no-deps'</span>
+      }
+    }
+  }
+
+  <span class="k">post</span> {
+    always {
+      sh <span class="s">'docker image prune -f'</span>  <span class="c">// cleanup</span>
+    }
+    failure {
+      echo <span class="s">'Pipeline failed — notify team'</span>
+    }
+  }
+}</pre>
+    </div>
+  </div>
+
+  <!-- 12. COMMANDS -->
+  <div class="section" id="commands">
+    <div class="section-label"><span class="section-num">12</span>Commands to run this project</div>
+    <h2>Step-by-step execution</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>Clone and setup env</h4>
+          <div class="code-wrap"><pre>git clone https://github.com/yourname/taskmanager
+cd taskmanager
+cp .env.example .env
+<span class="c"># Edit .env with your values</span></pre></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>Build all images</h4>
+          <div class="code-wrap"><pre>docker compose build
+<span class="c"># Or rebuild with no cache:</span>
+docker compose build --no-cache</pre></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>Start all services</h4>
+          <div class="code-wrap"><pre>docker compose up -d
+<span class="c"># Watch all logs:</span>
+docker compose logs -f</pre></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h4>Verify everything is healthy</h4>
+          <div class="code-wrap"><pre>docker compose ps
+<span class="c"># Should show all services as healthy</span>
+docker stats
+<span class="c"># Check individual service:</span>
+docker inspect tm_backend | grep -A 5 Health</pre></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <h4>Access the app</h4>
+          <div class="code-wrap"><pre><span class="c"># App → http://localhost</span>
+<span class="c"># API → http://localhost/api/tasks</span>
+<span class="c"># Prometheus → http://localhost:9090</span>
+<span class="c"># Grafana → http://localhost:3001</span></pre></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-body">
+          <h4>Debug a service</h4>
+          <div class="code-wrap"><pre>docker compose logs -f backend
+docker exec -it tm_backend sh
+docker exec -it tm_postgres psql -U taskuser -d taskdb</pre></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">7</div>
+        <div class="step-body">
+          <h4>Tear down (keep data)</h4>
+          <div class="code-wrap"><pre>docker compose down
+<span class="c"># Tear down AND remove all data volumes:</span>
+docker compose down -v</pre></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 13. INTERVIEW Q&A -->
+  <div class="section" id="interview">
+    <div class="section-label"><span class="section-num">13</span>Interview Q&A from this project</div>
+    <h2>Questions you can now answer from experience</h2>
+    <table>
+      <tr><th>Question</th><th>Your answer (from this project)</th></tr>
+      <tr>
+        <td>Why multi-stage build?</td>
+        <td class="note">Reduced frontend image from ~1.2GB to ~25MB. Stage 1 builds with Node, Stage 2 serves static files with Nginx only.</td>
+      </tr>
+      <tr>
+        <td>Why separate networks?</td>
+        <td class="note">Postgres and Redis are on db_net only. Frontend can't reach DB directly — network segmentation for security.</td>
+      </tr>
+      <tr>
+        <td>Why health checks on depends_on?</td>
+        <td class="note">Without it, backend starts before postgres is ready and crashes. Health check waits for postgres to be accepting connections.</td>
+      </tr>
+      <tr>
+        <td>Volumes vs bind mounts?</td>
+        <td class="note">Bind mounts for dev hot-reload. Named volumes for DB data in prod so data survives container recreation.</td>
+      </tr>
+      <tr>
+        <td>Why Redis?</td>
+        <td class="note">Session caching. Avoids hitting postgres on every authenticated request. Also used for rate limiting.</td>
+      </tr>
+      <tr>
+        <td>Why Nginx?</td>
+        <td class="note">Single port exposed (80). Routes / to React, /api to Node. SSL termination point. Load balancing if we scale.</td>
+      </tr>
+      <tr>
+        <td>How did you handle secrets?</td>
+        <td class="note">Via .env file (local dev). In production, Docker Secrets or vault. Never hardcoded in Dockerfile.</td>
+      </tr>
+      <tr>
+        <td>How did you monitor?</td>
+        <td class="note">Prometheus scrapes /metrics endpoint. Grafana dashboards for container CPU/memory/request rates.</td>
+      </tr>
+    </table>
+  </div>
+
+</div>
+
+<footer>
+  🐳 Docker Real-Time Project — Task Manager App &nbsp;·&nbsp; <strong>DevOps Interview Prep</strong> &nbsp;·&nbsp; Built for 16 LPA
+</footer>
+
+</body>
+</html>
