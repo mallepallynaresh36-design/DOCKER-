@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevOps Cheat Sheet — Git · Linux · Jenkins</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e17;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #e8edf5;
+    --muted: #8896aa;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --green: #10b981;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --pink: #ec4899;
+    --orange: #f97316;
+    --code-bg: #0d1117;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;line-height:1.6;}
+
+  /* NAV TABS */
+  .nav{
+    position:sticky;top:0;z-index:100;
+    background:rgba(10,14,23,0.95);
+    border-bottom:1px solid var(--border2);
+    backdrop-filter:blur(12px);
+    display:flex;align-items:center;gap:0;padding:0 40px;
+  }
+  .nav-logo{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:16px 24px 16px 0;border-right:1px solid var(--border2);margin-right:8px;}
+  .nav-tab{
+    padding:16px 20px;font-size:13px;font-weight:600;cursor:pointer;
+    border-bottom:2px solid transparent;color:var(--muted);
+    transition:all .2s;letter-spacing:0.5px;text-transform:uppercase;font-size:11px;
+  }
+  .nav-tab:hover{color:var(--text);}
+  .nav-tab.active-git{color:#f97316;border-bottom-color:#f97316;}
+  .nav-tab.active-linux{color:#10b981;border-bottom-color:#10b981;}
+  .nav-tab.active-jenkins{color:#ec4899;border-bottom-color:#ec4899;}
+
+  /* PAGES */
+  .page{display:none;}
+  .page.active{display:block;}
+
+  /* Hero */
+  .hero{
+    padding:60px 40px 48px;
+    border-bottom:1px solid var(--border);
+    position:relative;overflow:hidden;
+  }
+  .hero-git::before{content:'';position:absolute;top:-80px;right:-80px;width:400px;height:400px;background:radial-gradient(circle,rgba(249,115,22,0.1) 0%,transparent 70%);pointer-events:none;}
+  .hero-linux::before{content:'';position:absolute;top:-80px;right:-80px;width:400px;height:400px;background:radial-gradient(circle,rgba(16,185,129,0.09) 0%,transparent 70%);pointer-events:none;}
+  .hero-jenkins::before{content:'';position:absolute;top:-80px;right:-80px;width:400px;height:400px;background:radial-gradient(circle,rgba(236,72,153,0.09) 0%,transparent 70%);pointer-events:none;}
+  .badge{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:11px;letter-spacing:2px;text-transform:uppercase;
+    padding:4px 12px;border-radius:20px;margin-bottom:20px;
+  }
+  .badge-git{color:#f97316;border:1px solid rgba(249,115,22,0.35);}
+  .badge-linux{color:#10b981;border:1px solid rgba(16,185,129,0.35);}
+  .badge-jenkins{color:#ec4899;border:1px solid rgba(236,72,153,0.35);}
+  h1{font-size:clamp(32px,5vw,52px);font-weight:800;line-height:1.1;letter-spacing:-1px;margin-bottom:12px;}
+  .accent-git{color:#f97316;}
+  .accent-linux{color:#10b981;}
+  .accent-jenkins{color:#ec4899;}
+  .subtitle{font-size:15px;color:var(--muted);max-width:560px;}
+  .meta-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;}
+  .mtag{font-size:11px;padding:3px 10px;border-radius:4px;background:var(--surface2);color:var(--muted);border:1px solid var(--border2);}
+
+  /* Layout */
+  .container{max-width:1200px;margin:0 auto;padding:40px 40px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+  @media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr;}.nav{padding:0 16px;}.container{padding:24px 16px;}.hero{padding:40px 16px 32px;}}
+
+  /* Section headers */
+  .section{margin-bottom:40px;}
+  .section-title{
+    font-size:11px;letter-spacing:3px;text-transform:uppercase;
+    margin-bottom:16px;display:flex;align-items:center;gap:10px;
+  }
+  .section-title::after{content:'';flex:1;height:1px;background:var(--border2);}
+  .st-git{color:#f97316;}
+  .st-linux{color:#10b981;}
+  .st-jenkins{color:#ec4899;}
+
+  /* Cards */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;}
+  .card-title{font-size:13px;font-weight:700;letter-spacing:0.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .dot-orange{background:#f97316;}
+  .dot-green{background:#10b981;}
+  .dot-blue{background:#00d4ff;}
+  .dot-purple{background:#7c3aed;}
+  .dot-amber{background:#f59e0b;}
+  .dot-red{background:#ef4444;}
+  .dot-pink{background:#ec4899;}
+  .dot-cyan{background:#06b6d4;}
+
+  /* Command rows */
+  .cmd-row{display:flex;align-items:baseline;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;}
+  .cmd-row:last-child{border-bottom:none;}
+  .cmd{font-size:12px;white-space:nowrap;flex-shrink:0;min-width:0;word-break:break-all;}
+  .cmd-git{color:#f97316;}
+  .cmd-linux{color:#10b981;}
+  .cmd-jenkins{color:#ec4899;}
+  .desc{font-size:12px;color:var(--muted);font-family:'Syne',sans-serif;flex:1;}
+
+  /* Code blocks */
+  .code-block{
+    background:var(--code-bg);border:1px solid var(--border2);
+    border-radius:8px;padding:16px;margin-top:12px;
+    font-family:'JetBrains Mono',monospace;font-size:12px;
+    line-height:1.8;overflow-x:auto;white-space:pre;
+  }
+  .cmt{color:#4a5568;}
+  .kw-git{color:#f97316;}
+  .kw-linux{color:#10b981;}
+  .kw-jenkins{color:#ec4899;}
+  .str{color:#10b981;}
+  .val{color:#f59e0b;}
+  .flag{color:#ec4899;}
+
+  /* Flow diagram */
+  .flow{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin:12px 0;}
+  .flow-step{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--text);white-space:nowrap;}
+  .flow-arrow-git{color:#f97316;padding:0 6px;font-size:14px;}
+  .flow-arrow-linux{color:#10b981;padding:0 6px;font-size:14px;}
+  .flow-arrow-jenkins{color:#ec4899;padding:0 6px;font-size:14px;}
+
+  /* Table */
+  table{width:100%;border-collapse:collapse;font-size:12px;}
+  th{text-align:left;padding:8px 10px;color:var(--muted);border-bottom:1px solid var(--border2);font-family:'Syne',sans-serif;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;}
+  td{padding:8px 10px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;color:var(--text);}
+  tr:last-child td{border-bottom:none;}
+  td.note{font-family:'Syne',sans-serif;color:var(--muted);}
+  tr:hover td{background:var(--surface2);}
+
+  /* Highlight boxes */
+  .tip-git{background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--muted);margin-top:12px;}
+  .tip-git strong{color:#f97316;}
+  .tip-linux{background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--muted);margin-top:12px;}
+  .tip-linux strong{color:#10b981;}
+  .tip-jenkins{background:rgba(236,72,153,0.06);border:1px solid rgba(236,72,153,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--muted);margin-top:12px;}
+  .tip-jenkins strong{color:#ec4899;}
+  .warn{background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--muted);margin-top:12px;}
+  .warn strong{color:#f59e0b;}
+
+  /* Full-width card */
+  .card-full{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;}
+
+  /* Tag badges */
+  .badge-must{background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.2);font-size:10px;padding:2px 7px;border-radius:4px;}
+  .badge-mid{background:rgba(245,158,11,0.1);color:#f59e0b;border:1px solid rgba(245,158,11,0.2);font-size:10px;padding:2px 7px;border-radius:4px;}
+  .badge-adv{background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.2);font-size:10px;padding:2px 7px;border-radius:4px;}
+
+  /* check marks */
+  .chk-yes{color:#10b981;}
+  .chk-no{color:#ef4444;}
+
+  .footer{text-align:center;padding:32px;border-top:1px solid var(--border);color:var(--muted);font-size:12px;}
+  hr{border:none;border-top:1px solid var(--border);margin:40px 0;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">DevOps Interview Prep</div>
+  <div class="nav-tab active-git" onclick="showPage('git',this)">⑁ Git</div>
+  <div class="nav-tab" onclick="showPage('linux',this)">🐧 Linux</div>
+  <div class="nav-tab" onclick="showPage('jenkins',this)">⚙ Jenkins</div>
+</nav>
+
+<!-- ════════════════════════════════════════════
+     GIT PAGE
+════════════════════════════════════════════ -->
+<div id="page-git" class="page active">
+  <div class="hero hero-git">
+    <div class="badge badge-git">⑁ Version Control</div>
+    <h1>Git <span class="accent-git">Cheat Sheet</span></h1>
+    <p class="subtitle">Every Git command and concept you need to crack the DevOps interview. Built for 2–3 year experience level.</p>
+    <div class="meta-tags">
+      <span class="mtag">Core Workflow</span>
+      <span class="mtag">Branching</span>
+      <span class="mtag">Merge & Rebase</span>
+      <span class="mtag">Stash & Reset</span>
+      <span class="mtag">Tags & Releases</span>
+      <span class="mtag">Conflict Resolution</span>
+      <span class="mtag">Remote Operations</span>
+      <span class="mtag">Internals</span>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- LIFECYCLE -->
+    <div class="section">
+      <div class="section-title st-git">01 — Git object model</div>
+      <div class="card-full">
+        <div class="card-title"><span class="dot dot-orange"></span>How Git stores everything</div>
+        <div class="flow">
+          <span class="flow-step">Working directory</span><span class="flow-arrow-git">→ git add →</span>
+          <span class="flow-step">Staging area (Index)</span><span class="flow-arrow-git">→ git commit →</span>
+          <span class="flow-step">Local repo (.git)</span><span class="flow-arrow-git">→ git push →</span>
+          <span class="flow-step">Remote (GitHub)</span>
+        </div>
+        <div class="flow" style="margin-top:10px;">
+          <span class="flow-step">Remote (GitHub)</span><span class="flow-arrow-git">→ git fetch →</span>
+          <span class="flow-step">Remote tracking branch</span><span class="flow-arrow-git">→ git merge →</span>
+          <span class="flow-step">Local branch</span>
+        </div>
+        <div class="tip-git" style="margin-top:14px;"><strong>Interview tip:</strong> <code>git pull</code> = <code>git fetch</code> + <code>git merge</code>. Always say this — it shows you understand the internals, not just the shortcut.</div>
+      </div>
+    </div>
+
+    <!-- SETUP -->
+    <div class="section">
+      <div class="section-title st-git">02 — Setup & config</div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title"><span class="dot dot-orange"></span>Initial configuration</div>
+          <div class="cmd-row"><span class="cmd cmd-git">git config --global user.name "Name"</span><span class="desc">Set global username</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git config --global user.email "x@y.com"</span><span class="desc">Set global email</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git config --list</span><span class="desc">View all config values</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git config --global core.editor vim</span><span class="desc">Set default editor</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git config --global alias.st status</span><span class="desc">Create command alias</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">cat ~/.gitconfig</span><span class="desc">View config file directly</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot dot-green"></span>Init & clone</div>
+          <div class="cmd-row"><span class="cmd cmd-git">git init</span><span class="desc">Initialize new local repo</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git clone &lt;url&gt;</span><span class="desc">Clone remote repo locally</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git clone &lt;url&gt; mydir</span><span class="desc">Clone into specific folder name</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git clone --depth 1 &lt;url&gt;</span><span class="desc">Shallow clone — latest commit only (faster)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git remote -v</span><span class="desc">Show remote URLs</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git remote add origin &lt;url&gt;</span><span class="desc">Add remote to local repo</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CORE WORKFLOW -->
+    <div class="section">
+      <div class="section-title st-git">03 — Core daily workflow</div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title"><span class="dot dot-orange"></span>Stage & commit</div>
+          <div class="cmd-row"><span class="cmd cmd-git">git status</span><span class="desc">Show working tree status</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git add .</span><span class="desc">Stage all changed files</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git add &lt;file&gt;</span><span class="desc">Stage specific file</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git add -p</span><span class="desc">Interactively stage chunks (hunk by hunk)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git commit -m "message"</span><span class="desc">Commit staged changes</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git commit --amend</span><span class="desc">Edit last commit message or add files</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git commit -am "message"</span><span class="desc">Stage tracked files + commit in one step</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot dot-blue"></span>Push & pull</div>
+          <div class="cmd-row"><span class="cmd cmd-git">git push origin &lt;branch&gt;</span><span class="desc">Push branch to remote</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git push -u origin &lt;branch&gt;</span><span class="desc">Push and set upstream tracking</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git push --force-with-lease</span><span class="desc">Safe force push (checks for remote changes)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git pull</span><span class="desc">Fetch + merge from tracked remote branch</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git pull --rebase</span><span class="desc">Fetch + rebase instead of merge (cleaner history)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git fetch origin</span><span class="desc">Download changes without merging</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git fetch --all</span><span class="desc">Fetch from all remotes</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BRANCHING -->
+    <div class="section">
+      <div class="section-title st-git">04 — Branching</div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title"><span class="dot dot-purple"></span>Create & switch branches</div>
+          <div class="cmd-row"><span class="cmd cmd-git">git branch</span><span class="desc">List all local branches</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git branch -a</span><span class="desc">List local + remote branches</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git branch &lt;name&gt;</span><span class="desc">Create new branch (stay on current)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git checkout -b &lt;name&gt;</span><span class="desc">Create and switch to branch</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git switch -c &lt;name&gt;</span><span class="desc">Modern way to create + switch (Git 2.23+)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git checkout &lt;name&gt;</span><span class="desc">Switch to existing branch</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git branch -d &lt;name&gt;</span><span class="desc">Delete local branch (safe — merged only)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git branch -D &lt;name&gt;</span><span class="desc">Force-delete local branch</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git push origin --delete &lt;name&gt;</span><span class="desc">Delete remote branch</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot dot-amber"></span>Merge vs Rebase</div>
+          <div class="cmd-row"><span class="cmd cmd-git">git merge &lt;branch&gt;</span><span class="desc">Merge branch — creates a merge commit</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git merge --no-ff &lt;branch&gt;</span><span class="desc">Force merge commit even on fast-forward</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git merge --squash &lt;branch&gt;</span><span class="desc">Squash all commits into one before merging</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git rebase &lt;branch&gt;</span><span class="desc">Replay commits on top — linear history</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git rebase -i HEAD~3</span><span class="desc">Interactive rebase — squash/edit/reorder last 3 commits</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git rebase --abort</span><span class="desc">Cancel an in-progress rebase</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git rebase --continue</span><span class="desc">Continue after resolving rebase conflict</span></div>
+          <div class="tip-git"><strong>Golden rule:</strong> Never rebase a branch others are working on — it rewrites commit history and breaks teammates' branches.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFLICT RESOLUTION -->
+    <div class="section">
+      <div class="section-title st-git">05 — Merge conflict resolution</div>
+      <div class="card-full">
+        <div class="card-title"><span class="dot dot-red"></span>Step-by-step conflict resolution</div>
+        <div class="grid2" style="gap:20px;">
+          <div>
+            <div class="cmd-row"><span class="cmd cmd-git" style="min-width:200px;">1. git merge feature-branch</span><span class="desc">Start the merge — Git reports CONFLICT</span></div>
+            <div class="cmd-row"><span class="cmd cmd-git" style="min-width:200px;">2. git status</span><span class="desc">See which files have conflicts</span></div>
+            <div class="cmd-row"><span class="cmd cmd-git" style="min-width:200px;">3. Open conflicted file</span><span class="desc">Edit and resolve the markers manually</span></div>
+            <div class="cmd-row"><span class="cmd cmd-git" style="min-width:200px;">4. git add &lt;file&gt;</span><span class="desc">Mark conflict as resolved</span></div>
+            <div class="cmd-row"><span class="cmd cmd-git" style="min-width:200px;">5. git commit</span><span class="desc">Complete the merge with a commit</span></div>
+            <div class="tip-git" style="margin-top:12px;"><strong>Abort instead?</strong> Run <code>git merge --abort</code> to go back to before the merge started.</div>
+          </div>
+          <div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Conflict markers inside the file:</div>
+            <div class="code-block" style="margin-top:0;">
+<span class="kw-git">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>
+your change on current branch
+<span class="val">=======</span>
+their change from feature-branch
+<span class="kw-git">&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature-branch</span>
+
+<span class="cmt"># Delete the markers, keep the right code,</span>
+<span class="cmt"># then: git add file → git commit</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STASH RESET RECOVERY -->
+    <div class="section">
+      <div class="section-title st-git">06 — Stash, reset & recovery</div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title"><span class="dot dot-green"></span>Stash</div>
+          <div class="cmd-row"><span class="cmd cmd-git">git stash</span><span class="desc">Save uncommitted changes to stash stack</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git stash push -m "wip: login"</span><span class="desc">Stash with a descriptive message</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git stash list</span><span class="desc">List all stashed changes</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git stash pop</span><span class="desc">Restore latest stash + remove from stack</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git stash apply stash@{2}</span><span class="desc">Apply specific stash, keep it in stack</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git stash drop stash@{0}</span><span class="desc">Delete a stash entry</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git stash clear</span><span class="desc">Delete all stashes</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot dot-red"></span>Reset & revert (most asked!)</div>
+          <div class="cmd-row"><span class="cmd cmd-git">git reset --soft HEAD~1</span><span class="desc">Undo last commit — keep changes staged</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git reset --mixed HEAD~1</span><span class="desc">Undo last commit — keep changes unstaged</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git reset --hard HEAD~1</span><span class="desc">Undo last commit — discard all changes</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git revert &lt;hash&gt;</span><span class="desc">Create new commit undoing a commit (safe for shared branches)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git checkout -- &lt;file&gt;</span><span class="desc">Discard unstaged changes in a file</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git clean -fd</span><span class="desc">Remove untracked files and directories</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git reflog</span><span class="desc">Recovery lifeline — see ALL history including resets</span></div>
+          <div class="tip-git"><strong>reset vs revert:</strong> Use <code>revert</code> on shared/remote branches (non-destructive). Use <code>reset</code> only on local commits.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGS & INSPECTION -->
+    <div class="section">
+      <div class="section-title st-git">07 — Logs, inspection & advanced</div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title"><span class="dot dot-orange"></span>Log & diff</div>
+          <div class="cmd-row"><span class="cmd cmd-git">git log</span><span class="desc">Full commit history</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git log --oneline --graph</span><span class="desc">Visual branch history (compact)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git log --oneline -10</span><span class="desc">Last 10 commits</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git log --author="name"</span><span class="desc">Commits by specific author</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git diff</span><span class="desc">Show unstaged changes</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git diff --staged</span><span class="desc">Show staged changes (vs last commit)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git diff main..feature</span><span class="desc">Diff between two branches</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git blame &lt;file&gt;</span><span class="desc">Who changed each line and when</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git show &lt;hash&gt;</span><span class="desc">Show a specific commit's changes</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot dot-blue"></span>Cherry-pick, tags & bisect</div>
+          <div class="cmd-row"><span class="cmd cmd-git">git cherry-pick &lt;hash&gt;</span><span class="desc">Apply a specific commit to current branch</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git cherry-pick A..B</span><span class="desc">Apply range of commits</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git tag v1.0.0</span><span class="desc">Create lightweight tag</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git tag -a v1.0.0 -m "Release"</span><span class="desc">Annotated tag with message</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git push origin --tags</span><span class="desc">Push all tags to remote</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git tag -d v1.0.0</span><span class="desc">Delete local tag</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git bisect start</span><span class="desc">Start binary search for a buggy commit</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git bisect good &lt;hash&gt;</span><span class="desc">Mark commit as good</span></div>
+          <div class="cmd-row"><span class="cmd cmd-git">git bisect bad</span><span class="desc">Mark current commit as bad — Git narrows down</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INTERVIEW CONCEPTS -->
+    <div class="section">
+      <div class="section-title st-git">08 — Interview concepts quick-fire</div>
+      <div class="card-full">
+        <div class="card-title"><span class="dot dot-amber"></span>Concept one-liners — know these cold</div>
+        <table>
+          <tr><th>Concept</th><th>One-liner answer</th></tr>
+          <tr><td>git pull vs git fetch</td><td class="note">pull = fetch + merge. fetch downloads without touching your working branch.</td></tr>
+          <tr><td>merge vs rebase</td><td class="note">merge = preserves full history with merge commit. rebase = linear history by replaying commits. Never rebase shared branches.</td></tr>
+          <tr><td>reset --soft vs --hard</td><td class="note">soft = undo commit, keep staged. hard = undo commit + discard all changes. Dangerous.</td></tr>
+          <tr><td>reset vs revert</td><td class="note">reset = rewrite history (local only). revert = new commit that undoes (safe for shared branches).</td></tr>
+          <tr><td>HEAD</td><td class="note">Pointer to the current commit you're on. HEAD~1 = one commit back.</td></tr>
+          <tr><td>Fast-forward merge</td><td class="note">No divergence — Git simply moves the pointer forward. No merge commit created.</td></tr>
+          <tr><td>Detached HEAD state</td><td class="note">Checked out a commit hash directly, not a branch. Create a branch to save work.</td></tr>
+          <tr><td>git flow vs trunk-based</td><td class="note">git flow = long-lived feature branches. Trunk-based = short-lived branches, merge to main daily.</td></tr>
+          <tr><td>hard link vs soft link (Git)</td><td class="note">Not Git-specific — but .git uses hard links for pack files. Interview may confuse with Linux.</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     LINUX PAGE
+════════════════════════════════════════════ -->
+<div id="page-linux" class="page">
+  <div class="hero hero-linux">
+    <div class="badge badge-linux">🐧 System Administration</div>
+    <h1>Linux <span class="accent-linux">Cheat Sheet</span></h1>
+    <p class="subtitle">Commands, permissions, networking, scripting and everything in between. Built for DevOps engineers targeting mid-to-senior level.</p>
+    <div class="meta-tags">
+      <span class="mtag">File System</span>
+      <span class="mtag">Permissions</span>
+      <span class="mtag">Process Management</span>
+      <span class="mtag">Networking</span>
+      <span class="mtag">Text Processing</span>
+      <span class="mtag">Shell Scripting</span>
+      <span class="mtag">Systemd</span>
+      <span class="mtag">Cron</span>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- FILE SYSTEM -->
+    <div class="section">
+      <div class="section-title st-linux">01 — File & directory operations</div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title"><span class="dot dot-green"></span>Navigate & manage</div>
+          <div class="cmd-row"><span class="cmd cmd-linux">ls -lah</span><span class="desc">List files — long, all (hidden), human-readable sizes</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">pwd</span><span class="desc">Print current working directory</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">cd - </span><span class="desc">Go back to previous directory</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">mkdir -p dir/sub/deep</span><span class="desc">Create nested directories in one command</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">cp -r src/ dest/</span><span class="desc">Copy directory recursively</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">mv file.txt /new/path/</span><span class="desc">Move or rename file</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">rm -rf dirname/</span><span class="desc">Force delete directory recursively (⚠️ no undo)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">touch file.txt</span><span class="desc">Create empty file or update timestamp</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">find / -name "*.log" -mtime -1</span><span class="desc">Find .log files modified in last 1 day</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">find . -size +100M</span><span class="desc">Find files larger than 100MB</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">du -sh *</span><span class="desc">Disk usage of each item in current directory</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">df -h</span><span class="desc">Disk free space on all mounted filesystems</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot dot-blue"></span>Links, archives & transfer</div>
+          <div class="cmd-row"><span class="cmd cmd-linux">ln -s /target /link</span><span class="desc">Create symbolic (soft) link — pointer to filename</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">ln /target /hardlink</span><span class="desc">Create hard link — same inode, survives source deletion</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">readlink -f /link</span><span class="desc">Resolve symlink to its real path</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">tar -czf archive.tar.gz dir/</span><span class="desc">Create gzipped tar archive</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">tar -xzf archive.tar.gz</span><span class="desc">Extract gzipped tar archive</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">tar -tzf archive.tar.gz</span><span class="desc">List contents without extracting</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">zip -r out.zip dir/</span><span class="desc">Create zip archive</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">scp file.txt user@host:/path</span><span class="desc">Secure copy to remote server</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">rsync -avz src/ user@host:/dest/</span><span class="desc">Sync files to remote (faster, resumable)</span></div>
+          <div class="tip-linux"><strong>Hard vs Soft:</strong> Hard link = two doors to same room. Soft link = a signboard pointing to the room. Delete the room, signboard breaks; other door still works.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERMISSIONS -->
+    <div class="section">
+      <div class="section-title st-linux">02 — File permissions</div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title"><span class="dot dot-amber"></span>chmod & chown</div>
+          <div class="cmd-row"><span class="cmd cmd-linux">chmod 755 script.sh</span><span class="desc">rwxr-xr-x — owner full, group+others read+execute</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">chmod 644 file.txt</span><span class="desc">rw-r--r-- — owner read+write, others read only</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">chmod 600 ~/.ssh/id_rsa</span><span class="desc">rw------- — SSH private key, owner only</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">chmod 777 file</span><span class="desc">rwxrwxrwx — everyone full access (avoid in prod)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">chmod +x script.sh</span><span class="desc">Add execute permission symbolically</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">chmod -R 755 /dir</span><span class="desc">Apply permissions recursively</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">chown user:group file</span><span class="desc">Change file owner and group</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">chown -R ubuntu:ubuntu /app</span><span class="desc">Change ownership recursively</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">ls -l file</span><span class="desc">View permissions: -rwxr-xr-x = type+owner+group+others</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot dot-red"></span>Permission numbers decoded</div>
+          <table>
+            <tr><th>Number</th><th>Binary</th><th>Permissions</th><th>Common use</th></tr>
+            <tr><td>7</td><td>111</td><td>rwx</td><td class="note">Owner of scripts</td></tr>
+            <tr><td>6</td><td>110</td><td>rw-</td><td class="note">Owner of data files</td></tr>
+            <tr><td>5</td><td>101</td><td>r-x</td><td class="note">Group/others on scripts</td></tr>
+            <tr><td>4</td><td>100</td><td>r--</td><td class="note">Group/others on data</td></tr>
+            <tr><td>0</td><td>000</td><td>---</td><td class="note">No access</td></tr>
+          </table>
+          <div style="margin-top:14px;font-size:12px;color:var(--muted);">
+            <div style="margin-bottom:8px;">Common permission combos:</div>
+            <div class="cmd-row"><span class="cmd cmd-linux">755</span><span class="desc">Shell scripts, web server dirs</span></div>
+            <div class="cmd-row"><span class="cmd cmd-linux">644</span><span class="desc">Config files, static web files</span></div>
+            <div class="cmd-row"><span class="cmd cmd-linux">600</span><span class="desc">SSH keys, private certs</span></div>
+            <div class="cmd-row"><span class="cmd cmd-linux">400</span><span class="desc">Read-only private key (AWS pem)</span></div>
+          </div>
+          <div class="tip-linux"><strong>Formula:</strong> r=4, w=2, x=1. Add them. 7=4+2+1, 5=4+0+1, 6=4+2+0.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROCESS -->
+    <div class="section">
+      <div class="section-title st-linux">03 — Process management</div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title"><span class="dot dot-green"></span>View & control processes</div>
+          <div class="cmd-row"><span class="cmd cmd-linux">ps aux</span><span class="desc">List all running processes with CPU/mem</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">ps aux | grep nginx</span><span class="desc">Find processes by name</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">top</span><span class="desc">Live CPU+memory view (press q to quit)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">htop</span><span class="desc">Interactive process viewer (install separately)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">kill &lt;PID&gt;</span><span class="desc">Send SIGTERM — graceful shutdown</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">kill -9 &lt;PID&gt;</span><span class="desc">Send SIGKILL — force terminate immediately</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">killall nginx</span><span class="desc">Kill all processes by name</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">pkill -f "python app.py"</span><span class="desc">Kill by full command string match</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">nohup ./script.sh &amp;</span><span class="desc">Run in background, immune to terminal close</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">jobs / fg / bg</span><span class="desc">List background jobs / bring to foreground / background</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">nice -n 10 ./script.sh</span><span class="desc">Run with lower priority (nice value 10)</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot dot-pink"></span>Systemd service management</div>
+          <div class="cmd-row"><span class="cmd cmd-linux">systemctl start nginx</span><span class="desc">Start a service</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">systemctl stop nginx</span><span class="desc">Stop a service</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">systemctl restart nginx</span><span class="desc">Stop then start</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">systemctl reload nginx</span><span class="desc">Reload config without full restart</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">systemctl status nginx</span><span class="desc">Show service status + recent logs</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">systemctl enable nginx</span><span class="desc">Auto-start on boot</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">systemctl disable nginx</span><span class="desc">Disable auto-start on boot</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">systemctl list-units --type=service</span><span class="desc">List all active services</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">journalctl -u nginx -f</span><span class="desc">Follow logs of a systemd service</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">journalctl -u nginx --since "1h ago"</span><span class="desc">Logs from last 1 hour</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">journalctl -xe</span><span class="desc">Show latest journal with explanations</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NETWORKING — HIGHLIGHTED AS GAP -->
+    <div class="section">
+      <div class="section-title st-linux">04 — Networking (your gap area — master this!)</div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title"><span class="dot dot-red"></span>Port & connection debugging</div>
+          <div class="cmd-row"><span class="cmd cmd-linux">netstat -tulnp | grep 8080</span><span class="desc">Find process using port 8080 (classic)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">ss -tulnp | grep 8080</span><span class="desc">Modern replacement for netstat (faster)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">lsof -i :8080</span><span class="desc">List open files on port 8080 — shows PID + name</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">lsof -i tcp</span><span class="desc">All open TCP connections</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">netstat -an | grep ESTABLISHED</span><span class="desc">All currently established connections</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">curl -I https://example.com</span><span class="desc">Fetch HTTP headers only — test if service is up</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">curl -v https://example.com</span><span class="desc">Verbose — shows full request + response</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">wget -O /dev/null http://host</span><span class="desc">Test download speed to a host</span></div>
+          <div class="tip-linux"><strong>netstat flags:</strong> -t=TCP, -u=UDP, -l=listening, -n=numeric IPs, -p=show PID. Together: <code>-tulnp</code></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot dot-blue"></span>Network diagnostics & SSH</div>
+          <div class="cmd-row"><span class="cmd cmd-linux">ping -c 4 google.com</span><span class="desc">Test reachability (4 packets)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">traceroute google.com</span><span class="desc">Trace network hops to destination</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">nslookup example.com</span><span class="desc">DNS lookup for a domain</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">dig example.com</span><span class="desc">Detailed DNS query output</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">ip addr show</span><span class="desc">Show all network interfaces and IPs</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">ip route show</span><span class="desc">Show routing table</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">ssh -i key.pem user@host</span><span class="desc">SSH with private key authentication</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">ssh -L 8080:localhost:80 user@host</span><span class="desc">SSH local port forwarding (tunnel)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">ssh-keygen -t rsa -b 4096</span><span class="desc">Generate RSA keypair</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">ssh-copy-id user@host</span><span class="desc">Copy public key to remote server</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">ufw status / ufw allow 22</span><span class="desc">Ubuntu firewall status / allow SSH port</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEXT PROCESSING -->
+    <div class="section">
+      <div class="section-title st-linux">05 — Text processing & log analysis</div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title"><span class="dot dot-green"></span>grep, awk, sed</div>
+          <div class="cmd-row"><span class="cmd cmd-linux">grep "ERROR" app.log</span><span class="desc">Search for pattern in file</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">grep -r "ERROR" /var/log/</span><span class="desc">Recursive search across all files</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">grep -i "error" file</span><span class="desc">Case-insensitive search</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">grep -v "DEBUG" app.log</span><span class="desc">Exclude lines matching pattern</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">grep -c "ERROR" app.log</span><span class="desc">Count matching lines</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">awk '{print $1}' file.txt</span><span class="desc">Print first column (space-delimited)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">awk -F: '{print $1}' /etc/passwd</span><span class="desc">Print first field using : delimiter</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">awk '/ERROR/{print}' app.log</span><span class="desc">Print lines matching pattern</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">sed 's/old/new/g' file.txt</span><span class="desc">Find and replace (output to stdout)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">sed -i 's/old/new/g' file.txt</span><span class="desc">Find and replace in-place (modifies file)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">sed -n '10,20p' file.txt</span><span class="desc">Print lines 10 to 20</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot dot-amber"></span>tail, head, sort, cut, wc</div>
+          <div class="cmd-row"><span class="cmd cmd-linux">tail -f /var/log/app.log</span><span class="desc">Follow log file in real time (used daily in prod)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">tail -n 100 app.log</span><span class="desc">Last 100 lines of file</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">head -n 20 file.txt</span><span class="desc">First 20 lines of file</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">cat file.txt</span><span class="desc">Print entire file contents</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">less file.txt</span><span class="desc">Paginate through large files (q to quit)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">wc -l file.txt</span><span class="desc">Count lines in file</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">sort file.txt</span><span class="desc">Sort lines alphabetically</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">sort -n -r file.txt</span><span class="desc">Sort numerically, reversed</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">uniq -c</span><span class="desc">Count consecutive duplicate lines</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">sort | uniq -c | sort -rn</span><span class="desc">Count unique occurrences by frequency (classic combo)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">cut -d: -f1 /etc/passwd</span><span class="desc">Extract first field using : as delimiter</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SHELL SCRIPTING -->
+    <div class="section">
+      <div class="section-title st-linux">06 — Shell scripting & cron</div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title"><span class="dot dot-green"></span>Bash scripting essentials</div>
+          <div class="code-block">
+<span class="kw-linux">#!/bin/bash</span>
+<span class="kw-linux">set -e</span>          <span class="cmt"># exit on any error</span>
+<span class="kw-linux">set -x</span>          <span class="cmt"># print each command (debug)</span>
+
+<span class="cmt"># Variables</span>
+NAME<span class="val">="devops"</span>
+echo <span class="str">"Hello $NAME"</span>
+
+<span class="cmt"># Conditionals</span>
+<span class="kw-linux">if</span> [ <span class="str">"$ENV"</span> == <span class="str">"prod"</span> ]; then
+  echo <span class="str">"Production!"</span>
+<span class="kw-linux">elif</span> [ <span class="str">"$ENV"</span> == <span class="str">"dev"</span> ]; then
+  echo <span class="str">"Dev mode"</span>
+<span class="kw-linux">fi</span>
+
+<span class="cmt"># For loop</span>
+<span class="kw-linux">for</span> server in web1 web2 web3; do
+  echo <span class="str">"Deploying to $server"</span>
+<span class="kw-linux">done</span>
+
+<span class="cmt"># Check exit code</span>
+./deploy.sh
+<span class="kw-linux">if</span> [ $? -ne 0 ]; then
+  echo <span class="str">"Deploy failed!"</span>
+  exit 1
+<span class="kw-linux">fi</span>
+
+<span class="cmt"># Read from file</span>
+<span class="kw-linux">while</span> IFS= read -r line; do
+  echo <span class="str">"$line"</span>
+<span class="kw-linux">done</span> &lt; servers.txt</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot dot-orange"></span>Cron jobs</div>
+          <div class="cmd-row"><span class="cmd cmd-linux">crontab -e</span><span class="desc">Edit your crontab (opens in default editor)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">crontab -l</span><span class="desc">List current cron jobs</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">crontab -r</span><span class="desc">Remove all cron jobs (careful!)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">cat /etc/crontab</span><span class="desc">System-wide crontab</span></div>
+          <div style="margin-top:14px;">
+            <div class="code-block" style="margin-top:0;">
+<span class="cmt"># Cron syntax: min hr dom mon dow command</span>
+<span class="cmt"># * = any value, */5 = every 5</span>
+
+<span class="val">*  *  *  *  *</span>   /bin/date     <span class="cmt"># every minute</span>
+<span class="val">0  *  *  *  *</span>   /backup.sh    <span class="cmt"># every hour</span>
+<span class="val">0  2  *  *  *</span>   /cleanup.sh   <span class="cmt"># 2am every day</span>
+<span class="val">0  2  *  *  0</span>   /weekly.sh    <span class="cmt"># 2am every Sunday</span>
+<span class="val">*/5 * *  *  *</span>   /health.sh    <span class="cmt"># every 5 minutes</span>
+<span class="val">0  0  1  *  *</span>   /monthly.sh   <span class="cmt"># midnight 1st of month</span></div>
+          </div>
+          <div class="tip-linux" style="margin-top:12px;"><strong>Remember:</strong> min(0-59) hr(0-23) dom(1-31) mon(1-12) dow(0-7, 0&7=Sunday). Use <a href="https://crontab.guru" style="color:#10b981;">crontab.guru</a> to verify expressions.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- USER MANAGEMENT -->
+    <div class="section">
+      <div class="section-title st-linux">07 — User management & sudo</div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title"><span class="dot dot-purple"></span>Users & groups</div>
+          <div class="cmd-row"><span class="cmd cmd-linux">whoami</span><span class="desc">Current logged-in username</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">id username</span><span class="desc">UID, GID and group memberships</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">useradd -m -s /bin/bash user</span><span class="desc">Create user with home dir and bash shell</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">passwd username</span><span class="desc">Set/change user password</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">usermod -aG docker ubuntu</span><span class="desc">Add user to a group (append)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">userdel -r username</span><span class="desc">Delete user + home directory</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">groupadd devteam</span><span class="desc">Create a new group</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">cat /etc/passwd</span><span class="desc">All user accounts on the system</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">sudo su - username</span><span class="desc">Switch to another user (with their env)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-linux">sudo visudo</span><span class="desc">Edit sudoers file safely</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot dot-red"></span>Interview concept quick-fire</div>
+          <table>
+            <tr><th>Concept</th><th>Answer</th></tr>
+            <tr><td>Hard link vs soft link</td><td class="note">Hard = same inode, persists after original deleted. Soft = pointer to path, breaks if original removed.</td></tr>
+            <tr><td>Permission 755</td><td class="note">Owner: rwx. Group: r-x. Others: r-x. Standard for scripts.</td></tr>
+            <tr><td>chmod vs chown</td><td class="note">chmod = change permissions. chown = change ownership.</td></tr>
+            <tr><td>Port checker command</td><td class="note">netstat -tulnp | grep PORT, or ss -tulnp, or lsof -i :PORT</td></tr>
+            <tr><td>SIGTERM vs SIGKILL</td><td class="note">SIGTERM (15) = graceful stop, can be caught. SIGKILL (9) = force kill, cannot be caught.</td></tr>
+            <tr><td>zombie process</td><td class="note">Process that has finished but parent hasn't read its exit code. Shows as Z in ps.</td></tr>
+            <tr><td>inode</td><td class="note">Data structure storing file metadata (size, owner, perms). NOT the filename — filename maps to inode.</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     JENKINS PAGE
+════════════════════════════════════════════ -->
+<div id="page-jenkins" class="page">
+  <div class="hero hero-jenkins">
+    <div class="badge badge-jenkins">⚙ CI/CD</div>
+    <h1>Jenkins <span class="accent-jenkins">Cheat Sheet</span></h1>
+    <p class="subtitle">Pipelines, agents, plugins, triggers and everything you need to build and explain production CI/CD systems confidently.</p>
+    <div class="meta-tags">
+      <span class="mtag">Pipeline Syntax</span>
+      <span class="mtag">Jenkinsfile</span>
+      <span class="mtag">Agents & Nodes</span>
+      <span class="mtag">Triggers</span>
+      <span class="mtag">Credentials</span>
+      <span class="mtag">Shared Libraries</span>
+      <span class="mtag">Parallel Stages</span>
+      <span class="mtag">Post Actions</span>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- CONCEPTS -->
+    <div class="section">
+      <div class="section-title st-jenkins">01 — Core concepts</div>
+      <div class="card-full">
+        <div class="card-title"><span class="dot dot-pink"></span>CI/CD pipeline flow</div>
+        <div class="flow">
+          <span class="flow-step">Code push</span><span class="flow-arrow-jenkins">→ webhook →</span>
+          <span class="flow-step">Jenkins triggers</span><span class="flow-arrow-jenkins">→</span>
+          <span class="flow-step">Agent picks up job</span><span class="flow-arrow-jenkins">→</span>
+          <span class="flow-step">Build</span><span class="flow-arrow-jenkins">→</span>
+          <span class="flow-step">Test</span><span class="flow-arrow-jenkins">→</span>
+          <span class="flow-step">Docker build & push</span><span class="flow-arrow-jenkins">→</span>
+          <span class="flow-step">Deploy</span><span class="flow-arrow-jenkins">→</span>
+          <span class="flow-step">Notify team</span>
+        </div>
+        <div class="tip-jenkins" style="margin-top:14px;"><strong>CI vs CD:</strong> CI = Continuous Integration (build + test on every commit). CD = Continuous Delivery (deploy to staging automatically). Continuous Deployment = deploy to production automatically, no manual gate.</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title st-jenkins">02 — Freestyle vs Pipeline</div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title"><span class="dot dot-amber"></span>Freestyle job</div>
+          <div class="cmd-row"><span class="desc" style="color:var(--amber);">→</span><span class="desc">GUI-based configuration — dropdowns and forms</span></div>
+          <div class="cmd-row"><span class="desc" style="color:var(--amber);">→</span><span class="desc">No code needed — just click to configure Git, build steps</span></div>
+          <div class="cmd-row"><span class="desc" style="color:var(--amber);">→</span><span class="desc">Config stored in Jenkins — not in your repo</span></div>
+          <div class="cmd-row"><span class="desc" style="color:var(--red);">✗</span><span class="desc">Not version-controlled</span></div>
+          <div class="cmd-row"><span class="desc" style="color:var(--red);">✗</span><span class="desc">Limited to simple linear steps</span></div>
+          <div class="cmd-row"><span class="desc" style="color:var(--red);">✗</span><span class="desc">Cannot restart from a specific stage</span></div>
+          <div class="cmd-row"><span class="desc" style="color:var(--red);">✗</span><span class="desc">Considered legacy — avoid for new projects</span></div>
+          <div class="tip-jenkins"><strong>Use when:</strong> Quick one-off jobs, learning Jenkins, or very simple scheduled tasks.</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot dot-green"></span>Pipeline job (industry standard)</div>
+          <div class="cmd-row"><span class="desc" style="color:var(--green);">✓</span><span class="desc">Code-based — defined in a Jenkinsfile</span></div>
+          <div class="cmd-row"><span class="desc" style="color:var(--green);">✓</span><span class="desc">Jenkinsfile lives in your Git repo — version controlled</span></div>
+          <div class="cmd-row"><span class="desc" style="color:var(--green);">✓</span><span class="desc">Reviewable via Pull Requests like any code</span></div>
+          <div class="cmd-row"><span class="desc" style="color:var(--green);">✓</span><span class="desc">Supports complex workflows — parallel stages, approvals</span></div>
+          <div class="cmd-row"><span class="desc" style="color:var(--green);">✓</span><span class="desc">Can restart from a specific failed stage</span></div>
+          <div class="cmd-row"><span class="desc" style="color:var(--green);">✓</span><span class="desc">Two types: Declarative (structured) and Scripted (Groovy)</span></div>
+          <div class="cmd-row"><span class="desc" style="color:var(--green);">✓</span><span class="desc">Multibranch Pipeline — auto-discovers all branches</span></div>
+          <div class="tip-jenkins"><strong>Use always</strong> for real projects. Jenkinsfile in repo = reproducible, auditable CI/CD.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DECLARATIVE PIPELINE -->
+    <div class="section">
+      <div class="section-title st-jenkins">03 — Declarative pipeline — full reference</div>
+      <div class="card-full">
+        <div class="card-title"><span class="dot dot-pink"></span>Complete Jenkinsfile with all blocks — memorise this skeleton</div>
+        <div class="code-block">
+<span class="kw-jenkins">pipeline</span> {
+    <span class="kw-jenkins">agent</span> any                         <span class="cmt">// run on any available agent</span>
+    <span class="cmt">// agent { label 'linux-node' }   // target specific node by label</span>
+    <span class="cmt">// agent none                      // no global agent, define per-stage</span>
+
+    <span class="kw-jenkins">environment</span> {
+        APP_ENV   = <span class="str">'production'</span>
+        REGISTRY  = <span class="str">'docker.io/myorg'</span>
+        IMAGE_TAG = <span class="str">"${BUILD_NUMBER}"</span>   <span class="cmt">// built-in Jenkins env var</span>
+    }
+
+    <span class="kw-jenkins">options</span> {
+        timeout(time: 30, unit: <span class="str">'MINUTES'</span>)  <span class="cmt">// abort if pipeline takes too long</span>
+        buildDiscarder(logRotator(numToKeepStr: <span class="str">'10'</span>))
+        disableConcurrentBuilds()              <span class="cmt">// no parallel runs of same job</span>
+    }
+
+    <span class="kw-jenkins">parameters</span> {
+        string(name: <span class="str">'BRANCH'</span>, defaultValue: <span class="str">'main'</span>, description: <span class="str">'Branch to deploy'</span>)
+        booleanParam(name: <span class="str">'RUN_TESTS'</span>, defaultValue: true)
+    }
+
+    <span class="kw-jenkins">triggers</span> {
+        pollSCM(<span class="str">'H/5 * * * *'</span>)    <span class="cmt">// poll every 5 mins (use webhook instead)</span>
+        cron(<span class="str">'0 2 * * *'</span>)         <span class="cmt">// scheduled: 2am daily</span>
+    }
+
+    <span class="kw-jenkins">stages</span> {
+
+        <span class="kw-jenkins">stage</span>(<span class="str">'Checkout'</span>) {
+            <span class="kw-jenkins">steps</span> {
+                git branch: <span class="str">'main'</span>, url: <span class="str">'https://github.com/org/repo.git'</span>
+            }
+        }
+
+        <span class="kw-jenkins">stage</span>(<span class="str">'Build'</span>) {
+            <span class="kw-jenkins">steps</span> {
+                sh <span class="str">'mvn clean package -DskipTests'</span>
+            }
+        }
+
+        <span class="kw-jenkins">stage</span>(<span class="str">'Test'</span>) {
+            <span class="kw-jenkins">when</span> { expression { params.RUN_TESTS == true } }
+            <span class="kw-jenkins">steps</span> {
+                sh <span class="str">'mvn test'</span>
+            }
+            post {
+                always { junit <span class="str">'**/target/surefire-reports/*.xml'</span> }
+            }
+        }
+
+        <span class="kw-jenkins">stage</span>(<span class="str">'Parallel — Lint & Security Scan'</span>) {
+            <span class="kw-jenkins">parallel</span> {
+                <span class="kw-jenkins">stage</span>(<span class="str">'Lint'</span>)          { steps { sh <span class="str">'npm run lint'</span> } }
+                <span class="kw-jenkins">stage</span>(<span class="str">'Security scan'</span>) { steps { sh <span class="str">'trivy fs .'</span> } }
+            }
+        }
+
+        <span class="kw-jenkins">stage</span>(<span class="str">'Docker Build & Push'</span>) {
+            <span class="kw-jenkins">steps</span> {
+                <span class="kw-jenkins">withCredentials</span>([usernamePassword(
+                    credentialsId: <span class="str">'docker-hub-creds'</span>,
+                    usernameVariable: <span class="str">'DOCKER_USER'</span>,
+                    passwordVariable: <span class="str">'DOCKER_PASS'</span>
+                )]) {
+                    sh <span class="str">"""
+                        docker build -t ${REGISTRY}/myapp:${IMAGE_TAG} .
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                        docker push ${REGISTRY}/myapp:${IMAGE_TAG}
+                    """</span>
+                }
+            }
+        }
+
+        <span class="kw-jenkins">stage</span>(<span class="str">'Deploy to Staging'</span>) {
+            <span class="kw-jenkins">steps</span> {
+                sh <span class="str">'./deploy.sh staging'</span>
+            }
+        }
+
+        <span class="kw-jenkins">stage</span>(<span class="str">'Approval for Production'</span>) {
+            <span class="kw-jenkins">when</span> { branch <span class="str">'main'</span> }
+            <span class="kw-jenkins">steps</span> {
+                <span class="val">input</span> message: <span class="str">'Deploy to production?'</span>, ok: <span class="str">'Deploy'</span>
+            }
+        }
+
+        <span class="kw-jenkins">stage</span>(<span class="str">'Deploy to Production'</span>) {
+            <span class="kw-jenkins">when</span> { branch <span class="str">'main'</span> }
+            <span class="kw-jenkins">steps</span> {
+                retry(3) { sh <span class="str">'./deploy.sh production'</span> }
+            }
+        }
+    }
+
+    <span class="kw-jenkins">post</span> {
+        always  { cleanWs() }                                         <span class="cmt">// always clean workspace</span>
+        success { slackSend channel: <span class="str">'#builds'</span>, message: <span class="str">'✅ Passed'</span> }
+        failure { mail to: <span class="str">'team@company.com'</span>, subject: <span class="str">'❌ Build Failed'</span>,
+                       body: <span class="str">"Job: ${env.JOB_NAME} — ${env.BUILD_URL}"</span> }
+    }
+}</div>
+      </div>
+    </div>
+
+    <!-- PIPELINE BLOCKS REFERENCE -->
+    <div class="section">
+      <div class="section-title st-jenkins">04 — Pipeline block reference</div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title"><span class="dot dot-pink"></span>agent — where to run</div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">agent any</span><span class="desc">Run on any available Jenkins node</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">agent none</span><span class="desc">No global agent — specify per stage (flexible)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">agent { label 'linux' }</span><span class="desc">Target specific node by label</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">agent { docker 'node:18' }</span><span class="desc">Run inside a Docker container</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">agent { kubernetes { ... } }</span><span class="desc">Spin up dynamic K8s pod as agent</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot dot-blue"></span>when — conditional stages</div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">when { branch 'main' }</span><span class="desc">Only run on main branch</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">when { not { branch 'main' } }</span><span class="desc">Run on everything except main</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">when { environment name:'ENV', value:'prod' }</span><span class="desc">Run when env var matches</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">when { expression { params.DEPLOY } }</span><span class="desc">Run when boolean param is true</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">when { changeset '**/src/**' }</span><span class="desc">Run only if files in src/ changed</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot dot-amber"></span>post — cleanup & notifications</div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">post { always { ... } }</span><span class="desc">Run regardless of result — cleanup, publish</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">post { success { ... } }</span><span class="desc">Run only on success</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">post { failure { ... } }</span><span class="desc">Run only on failure — send alerts</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">post { unstable { ... } }</span><span class="desc">Run if tests failed but build passed</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">post { changed { ... } }</span><span class="desc">Run if result changed from previous build</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot dot-green"></span>Useful step functions</div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">sh 'command'</span><span class="desc">Run shell command (Linux/Mac)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">bat 'command'</span><span class="desc">Run shell command (Windows)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">echo "message"</span><span class="desc">Print to console output</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">input message: 'Approve?'</span><span class="desc">Manual approval gate — pauses pipeline</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">timeout(time:5, unit:'MINUTES')</span><span class="desc">Fail if step takes too long</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">retry(3) { sh 'flaky.sh' }</span><span class="desc">Retry a step up to N times on failure</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">sleep(time:10, unit:'SECONDS')</span><span class="desc">Wait/pause in pipeline</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">cleanWs()</span><span class="desc">Clean workspace after build</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">archiveArtifacts '**/*.jar'</span><span class="desc">Save artifacts for download</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">stash/unstash</span><span class="desc">Pass files between stages or agents</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AGENTS & NODES -->
+    <div class="section">
+      <div class="section-title st-jenkins">05 — Agents, nodes & master</div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title"><span class="dot dot-red"></span>Master vs Agent architecture</div>
+          <table>
+            <tr><th></th><th>Jenkins Master</th><th>Agent / Worker Node</th></tr>
+            <tr><td class="note">Role</td><td>Schedules, coordinates</td><td>Executes actual builds</td></tr>
+            <tr><td class="note">UI</td><td>Hosts Jenkins UI</td><td>No UI</td></tr>
+            <tr><td class="note">Runs builds?</td><td>Should NOT (security + load)</td><td>Yes — all build work here</td></tr>
+            <tr><td class="note">Connection</td><td>—</td><td>SSH or JNLP (Java agent)</td></tr>
+            <tr><td class="note">Labels</td><td>—</td><td>linux, docker, windows, etc.</td></tr>
+            <tr><td class="note">Dynamic?</td><td>Static</td><td>Can be dynamic (K8s, AWS)</td></tr>
+          </table>
+          <div class="tip-jenkins" style="margin-top:12px;"><strong>Why separate?</strong> Running builds on master risks crashing Jenkins itself. Heavy builds = high CPU/memory → master becomes unresponsive → ALL jobs fail.</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot dot-purple"></span>Build triggers</div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">Webhook (GitHub/GitLab)</span><span class="desc">Push-based — GitHub notifies Jenkins on commit. Fastest, preferred.</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">pollSCM('H/5 * * * *')</span><span class="desc">Poll-based — Jenkins checks repo every 5 mins. Slower, more load.</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">cron('0 2 * * *')</span><span class="desc">Scheduled build — 2am daily (nightly builds)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">Upstream job</span><span class="desc">Triggered when another job completes successfully</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">Manual trigger</span><span class="desc">User clicks "Build Now" in Jenkins UI</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">Build on PR</span><span class="desc">Multibranch pipeline auto-triggers on pull request</span></div>
+          <div class="tip-jenkins" style="margin-top:12px;"><strong>Webhook vs polling:</strong> Webhook = GitHub pushes notification to Jenkins (instant). Polling = Jenkins keeps asking GitHub (delay + API rate limits). Always prefer webhook in production.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CREDENTIALS & SECURITY -->
+    <div class="section">
+      <div class="section-title st-jenkins">06 — Credentials & security</div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title"><span class="dot dot-red"></span>withCredentials — inject secrets safely</div>
+          <div class="code-block">
+<span class="cmt">// Username + Password (Docker, DB)</span>
+<span class="kw-jenkins">withCredentials</span>([usernamePassword(
+    credentialsId: <span class="str">'docker-creds'</span>,
+    usernameVariable: <span class="str">'USER'</span>,
+    passwordVariable: <span class="str">'PASS'</span>
+)]) {
+    sh <span class="str">'docker login -u $USER -p $PASS'</span>
+}
+
+<span class="cmt">// Secret text (API key, token)</span>
+<span class="kw-jenkins">withCredentials</span>([string(
+    credentialsId: <span class="str">'api-token'</span>,
+    variable: <span class="str">'TOKEN'</span>
+)]) {
+    sh <span class="str">'curl -H "Auth: $TOKEN" https://api.example.com'</span>
+}
+
+<span class="cmt">// SSH private key</span>
+<span class="kw-jenkins">withCredentials</span>([sshUserPrivateKey(
+    credentialsId: <span class="str">'prod-ssh'</span>,
+    keyFileVariable: <span class="str">'KEY'</span>
+)]) {
+    sh <span class="str">'ssh -i $KEY user@prod-server ./deploy.sh'</span>
+}</div>
+          <div class="warn"><strong>Never:</strong> hardcode passwords in Jenkinsfile. They appear in logs, Git history, and are a major security risk.</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot dot-green"></span>Built-in environment variables</div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">env.BUILD_NUMBER</span><span class="desc">Current build number (1, 2, 3...)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">env.BUILD_URL</span><span class="desc">Full URL to current build in Jenkins UI</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">env.JOB_NAME</span><span class="desc">Name of the current job</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">env.BRANCH_NAME</span><span class="desc">Branch being built (multibranch)</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">env.WORKSPACE</span><span class="desc">Absolute path to workspace on agent</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">env.GIT_COMMIT</span><span class="desc">Full SHA of current commit</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">env.GIT_BRANCH</span><span class="desc">Branch name from Git</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">env.JENKINS_URL</span><span class="desc">Jenkins server URL</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">currentBuild.result</span><span class="desc">Current result: SUCCESS, FAILURE, UNSTABLE</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">currentBuild.duration</span><span class="desc">Build duration in milliseconds</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PLUGINS & INTERVIEW CONCEPTS -->
+    <div class="section">
+      <div class="section-title st-jenkins">07 — Key plugins & interview concepts</div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title"><span class="dot dot-amber"></span>Must-know plugins</div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">Git plugin</span><span class="desc">Checkout code from GitHub/GitLab/Bitbucket</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">Pipeline plugin</span><span class="desc">Core — enables Jenkinsfile-based pipelines</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">Docker Pipeline</span><span class="desc">Build, push, run Docker images in pipeline steps</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">Credentials Binding</span><span class="desc">withCredentials — safely inject secrets</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">Blue Ocean</span><span class="desc">Visual pipeline dashboard — much better UI</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">SonarQube Scanner</span><span class="desc">Code quality gate — blocks bad code from deploying</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">Slack Notification</span><span class="desc">Send build status to Slack channel</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">Kubernetes plugin</span><span class="desc">Dynamic pod-based agents on K8s cluster</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">Parameterized Trigger</span><span class="desc">Trigger downstream job with parameters</span></div>
+          <div class="cmd-row"><span class="cmd cmd-jenkins">Role-Based Auth Strategy</span><span class="desc">RBAC for Jenkins users — restrict who can do what</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot dot-pink"></span>Interview concept quick-fire</div>
+          <table>
+            <tr><th>Concept</th><th>One-liner answer</th></tr>
+            <tr><td>Declarative vs Scripted</td><td class="note">Declarative = structured, strict, beginner-friendly. Scripted = full Groovy, flexible, legacy.</td></tr>
+            <tr><td>Jenkinsfile benefit</td><td class="note">Lives in your repo → version-controlled, reviewable, reproducible CI/CD config.</td></tr>
+            <tr><td>Why not build on master?</td><td class="note">Load + security risk. Heavy builds crash master → all jobs fail. Use dedicated agents.</td></tr>
+            <tr><td>Webhook vs polling</td><td class="note">Webhook = GitHub pushes to Jenkins (instant). Polling = Jenkins checks GitHub (slow, wasteful).</td></tr>
+            <tr><td>parallel stages use case</td><td class="note">Run independent tests, scans, or builds simultaneously to reduce total pipeline time.</td></tr>
+            <tr><td>input step use case</td><td class="note">Manual approval before prod deploy. Pauses pipeline until a human approves.</td></tr>
+            <tr><td>Shared library</td><td class="note">Reusable Groovy code stored in a Git repo. Multiple Jenkinsfiles import and call it. DRY pipelines.</td></tr>
+            <tr><td>Multibranch pipeline</td><td class="note">Automatically discovers all branches in a repo and creates a pipeline job for each one.</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="footer">
+  ⑁ Git &nbsp;·&nbsp; 🐧 Linux &nbsp;·&nbsp; ⚙ Jenkins &nbsp;·&nbsp; DevOps Interview Prep &nbsp;·&nbsp; Built for your hike 🚀
+</div>
+
+<script>
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.className = 'nav-tab');
+  document.getElementById('page-' + id).classList.add('active');
+  el.classList.add('active-' + id);
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+</script>
+</body>
+</html>
